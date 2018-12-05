@@ -151,7 +151,7 @@ def _run_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, result_api
 )
 @click.option(
     "--result-api",
-    "-i",
+    "-r",
     required=True,
     type=str,
     envvar="THOTH_RESULT_API_URL",
