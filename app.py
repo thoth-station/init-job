@@ -85,12 +85,11 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str):
     graph.register_python_package_index(
         "https://pypi.org/simple",
         warehouse_api_url="https://pypi.org/pypi",
-        verify_ssl=True,
-        warehouse=True,
+        verify_ssl=True
     )
 
     for index_url in _list_available_indexes(index_base_url):
-        _LOGGER.info("Registering index %r", index)
+        _LOGGER.info("Registering index %r", index_url)
         graph.register_python_package_index(index_url)
 
 
