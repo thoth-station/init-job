@@ -25,6 +25,7 @@ import click
 from bs4 import BeautifulSoup
 
 from thoth.common import init_logging
+from thoth.common import OpenShift
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 
