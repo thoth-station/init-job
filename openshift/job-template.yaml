@@ -56,6 +56,16 @@ objects:
                   value: janusgraph
                 - name: THOTH_JANUSGRAPH_PORT
                   value: '8182'
+                - name: THOTH_MIDDLETIER_NAMESPACE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: thoth
+                      key: middletier-namespace
+                - name: THOTH_INFRA_NAMESPACE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: thoth
+                      key: infra-namespace
                 - name: SENTRY_DSN
                   valueFrom:
                     secretKeyRef:
