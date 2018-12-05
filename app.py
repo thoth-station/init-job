@@ -133,6 +133,10 @@ def _run_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, result_api
     for version in pypi.get_package_versions("six"):
         _do_run_core_solver_jobs(openshift, index_urls, "six", version, output)
 
+    _LOGGER.debug("Obtainig pip versions")
+    for version in pypi.get_package_versions("pip"):
+        _do_run_core_solver_jobs(openshift, index_urls, "pip", version, output)
+
 
 @click.command()
 @click.option(
