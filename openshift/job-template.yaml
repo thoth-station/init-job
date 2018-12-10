@@ -1,0 +1,101 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: adviser
+  annotations:
+    description: This is Thoth Core - Init Job
+    openshift.io/display-name: 'Thoth: Init Job'
+    version: 0.0.1
+    tags: poc,thoth,ai-stacks,init-job
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run recommendation logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+  labels:
+    app: thoth
+    template: init-job
+    component: init-job
+
+objects:
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: 'init-job'
+      labels:
+        app: thoth
+        component: init-job
+    spec:
+      template:
+        metadata:
+          labels:
+            app: thoth
+            component: init-job
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: analyzer
+          containers:
+            - name: init-job
+              image: init-job
+              livenessProbe:
+                # Give analyzer 10 minutes to run this job results, kill it if it was not able result anything.
+                tcpSocket:
+                  port: 80
+                initialDelaySeconds: 600
+                failureThreshold: 1
+                periodSeconds: 10
+              env:
+                - name: THOTH_LOG_INIT_JOB
+                  value: "${THOTH_LOG_INIT_JOB}"
+                - name: KUBERNETES_API_URL
+                  value: https://kubernetes.default.svc.cluster.local
+                - name: KUBERNETES_VERIFY_TLS
+                  value: "0"
+                - name: THOTH_RESULT_API_URL
+                  value: http://result-api
+                - name: THOTH_JANUSGRAPH_HOST
+                  value: janusgraph
+                - name: THOTH_JANUSGRAPH_PORT
+                  value: '8182'
+                - name: THOTH_MIDDLETIER_NAMESPACE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: thoth
+                      key: middletier-namespace
+                - name: THOTH_INFRA_NAMESPACE
+                  valueFrom:
+                    configMapKeyRef:
+                      name: thoth
+                      key: infra-namespace
+                - name: SENTRY_DSN
+                  valueFrom:
+                    secretKeyRef:
+                      key: sentry-dsn
+                      name: thoth
+              resources:
+                limits:
+                  memory: '256Mi'
+                  cpu: '500m'
+                requests:
+                  memory: '256Mi'
+                  cpu: '500m'
+          test: false
+          triggers:
+            - type: ImageChange
+              imageChangeParams:
+                automatic: true
+                containerNames:
+                  - init-job
+                from:
+                  kind: ImageStreamTag
+                  name: 'init-job:${IMAGE_STREAM_TAG}'
+parameters:
+  - name: THOTH_LOG_INIT_JOB
+    required: false
+    description: Log init-job actions
+    displayName: Log init-job actions
+    value: INFO
+  - description: Tag of the ImageStream to use
+    displayName: ImageStream Tag
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: 'latest'
