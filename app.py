@@ -110,7 +110,7 @@ def _do_run_core_solver_jobs(
 
     solvers_run = openshift.run_solver(
         packages=f"{package_name}=={package_version}",
-        output="result-api",
+        output="http://result-api",
         indexes=index_urls,
     )
 
