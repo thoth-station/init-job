@@ -79,11 +79,13 @@ def _list_available_indexes(index_base_url: str) -> list:
     return result
 
 
-def _register_indexes(graph: GraphDatabase, index_base_url: str):
+def _register_indexes(graph: GraphDatabase, index_base_url: str) -> typing.List[str]:
     """Register available AICoE indexes into Thoth's database."""
     _LOGGER.info("Registering PyPI index https://pypi.org/simple")
+    index_urls = ["https://pypi.org/simple"]
+
     graph.register_python_package_index(
-        "https://pypi.org/simple",
+        index_urls[0],
         warehouse_api_url="https://pypi.org/pypi",
         verify_ssl=True
     )
@@ -91,6 +93,9 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str):
     for index_url in _list_available_indexes(index_base_url):
         _LOGGER.info("Registering index %r", index_url)
         graph.register_python_package_index(index_url)
+        index_urls.append(index_url)
+
+    return index_urls
 
 
 def _do_run_core_solver_jobs(
@@ -110,18 +115,16 @@ def _do_run_core_solver_jobs(
 
     solvers_run = openshift.run_solver(
         packages=f"{package_name}=={package_version}",
-        output="http://result-api",
+        output=output,
         indexes=index_urls,
     )
 
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
 
 
-def _run_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, result_api: str):
+def _run_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index_urls: typing.List[str], result_api: str):
     """Run solver jobs for core components of Python packaging."""
     pypi = Source("https://pypi.org/simple")
-    index_urls = graph.get_python_package_index_urls()
-
     output = result_api + "/api/v1/solver-result"
 
     _LOGGER.debug("Obtainig setuptools versions")
@@ -171,8 +174,8 @@ def cli(verbose: bool = False, result_api: str = None, index_base_url: str = Non
     graph = GraphDatabase()
     graph.connect()
 
-    _register_indexes(graph, index_base_url)
-    _run_core_solver_jobs(graph, openshift, result_api)
+    indexes = _register_indexes(graph, index_base_url)
+    _run_core_solver_jobs(graph, openshift, indexes, result_api)
 
 
 if __name__ == "__main__":
