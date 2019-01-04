@@ -53,9 +53,13 @@ def _get_build_configuration(index_base_url, distro) -> list:
                 if configuration == "Parent Directory":
                     continue
 
-                configurations.append(
-                    build_configuration_url + configuration + "simple"
-                )
+                url = build_configuration_url + configuration + "simple"
+                response = requests.get(url)
+                if response.status_code != 200:
+                    _LOGGER.warning("No simple index found on the given URL: %r", url)
+                    continue
+
+                configurations.append(url)
 
     return configurations
 
