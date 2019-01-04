@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Template
 metadata:
-  name: adviser
+  name: init-job
   annotations:
     description: This is Thoth Core - Init Job
     openshift.io/display-name: 'Thoth: Init Job'
