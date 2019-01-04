@@ -32,7 +32,7 @@ from thoth.storages import GraphDatabase
 init_logging()
 
 _LOGGER = logging.getLogger("thoth.init_job")
-_DEFAULT_INDEX_BASE_URL = "http://tensorflow.pypi.thoth-station.ninja/index"
+_DEFAULT_INDEX_BASE_URL = "https://tensorflow.pypi.thoth-station.ninja/index"
 
 
 def _get_build_configuration(index_base_url, distro) -> list:
