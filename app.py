@@ -102,7 +102,7 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str) -> typing.List[
     return index_urls
 
 
-def _do_run_core_solver_jobs(
+def _do_schedule_core_solver_jobs(
     openshift: OpenShift,
     index_urls: typing.List[str],
     package_name: str,
@@ -117,7 +117,7 @@ def _do_run_core_solver_jobs(
         output,
     )
 
-    solvers_run = openshift.run_solver(
+    solvers_run = openshift.schedule_solver(
         packages=f"{package_name}=={package_version}",
         output=output,
         indexes=index_urls,
@@ -126,22 +126,22 @@ def _do_run_core_solver_jobs(
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
 
 
-def _run_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index_urls: typing.List[str], result_api: str):
+def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index_urls: typing.List[str], result_api: str):
     """Run solver jobs for core components of Python packaging."""
     pypi = Source("https://pypi.org/simple")
     output = result_api + "/api/v1/solver-result"
 
     _LOGGER.debug("Obtainig setuptools versions")
     for version in pypi.get_package_versions("setuptools"):
-        _do_run_core_solver_jobs(openshift, index_urls, "setuptools", version, output)
+        _do_schedule_core_solver_jobs(openshift, index_urls, "setuptools", version, output)
 
     _LOGGER.debug("Obtainig six versions")
     for version in pypi.get_package_versions("six"):
-        _do_run_core_solver_jobs(openshift, index_urls, "six", version, output)
+        _do_schedule_core_solver_jobs(openshift, index_urls, "six", version, output)
 
     _LOGGER.debug("Obtainig pip versions")
     for version in pypi.get_package_versions("pip"):
-        _do_run_core_solver_jobs(openshift, index_urls, "pip", version, output)
+        _do_schedule_core_solver_jobs(openshift, index_urls, "pip", version, output)
 
 
 @click.command()
@@ -179,7 +179,7 @@ def cli(verbose: bool = False, result_api: str = None, index_base_url: str = Non
     graph.connect()
 
     indexes = _register_indexes(graph, index_base_url)
-    _run_core_solver_jobs(graph, openshift, indexes, result_api)
+    _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
 
 
 if __name__ == "__main__":
