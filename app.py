@@ -117,7 +117,7 @@ def _do_schedule_core_solver_jobs(
         output,
     )
 
-    solvers_run = openshift.schedule_solver(
+    solvers_run = openshift.schedule_all_solvers(
         packages=f"{package_name}=={package_version}",
         output=output,
         indexes=index_urls,
