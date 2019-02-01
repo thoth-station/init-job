@@ -33,6 +33,7 @@ init_logging()
 
 _LOGGER = logging.getLogger("thoth.init_job")
 _DEFAULT_INDEX_BASE_URL = "https://tensorflow.pypi.thoth-station.ninja/index"
+_PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 
 
 def _get_build_configuration(index_base_url, distro) -> list:
@@ -66,7 +67,7 @@ def _get_build_configuration(index_base_url, distro) -> list:
 
 def _list_available_indexes(index_base_url: str) -> list:
     """List available indexes on AICoE index."""
-    _LOGGER.info("Listing available indexes on AICoE index %r.", index_base_url)
+    _LOGGER.info("Listing available indexes on AICoE index %r", index_base_url)
     response = requests.get(index_base_url)
     soup = BeautifulSoup(response.text, "lxml")
 
@@ -85,12 +86,12 @@ def _list_available_indexes(index_base_url: str) -> list:
 
 def _register_indexes(graph: GraphDatabase, index_base_url: str) -> typing.List[str]:
     """Register available AICoE indexes into Thoth's database."""
-    _LOGGER.info("Registering PyPI index https://pypi.org/simple")
-    index_urls = ["https://pypi.org/simple"]
+    _LOGGER.info("Registering PyPI index %r", _PYPI_SIMPLE_API_URL)
+    index_urls = [_PYPI_SIMPLE_API_URL]
 
     graph.register_python_package_index(
         index_urls[0],
-        warehouse_api_url="https://pypi.org/pypi",
+        warehouse_api_url=_PYPI_SIMPLE_API_URL,
         verify_ssl=True
     )
 
