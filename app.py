@@ -127,7 +127,7 @@ def _do_schedule_core_solver_jobs(
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
 
 
-def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index_urls: typing.List[str], result_api: str):
+def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index_urls: typing.List[str], result_api: str):  # Ignore PycodestyleBear (E501)
     """Run solver jobs for core components of Python packaging."""
     pypi = Source("https://pypi.org/simple")
     output = result_api + "/api/v1/solver-result"
