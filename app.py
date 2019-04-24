@@ -164,12 +164,18 @@ def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index
 @click.option(
     "--result-api",
     "-r",
-    required=True,
     type=str,
     envvar="THOTH_RESULT_API_URL",
     help="AICoE URL base for discovering packages.",
 )
-def cli(verbose: bool = False, result_api: str = None, index_base_url: str = None):
+@click.option(
+    "--register-indexes-only",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_REGISTER_INDEXES_ONLY",
+    help="Do not schedule solver jobs, only register indexes.",
+)
+def cli(verbose: bool = False, result_api: str = None, index_base_url: str = None, register_indexes_only: bool = False):
     """Register AICoE indexes in Thoth's database."""
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
@@ -180,8 +186,15 @@ def cli(verbose: bool = False, result_api: str = None, index_base_url: str = Non
     graph.connect()
     _LOGGER.info("Talking to graph database located at %r", graph.hosts)
 
+    _LOGGER.info("Registering indexes...")
     indexes = _register_indexes(graph, index_base_url)
-    _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
+
+    if not register_indexes_only:
+        if not result_api:
+            raise ValueError("No result API URL provided")
+
+        _LOGGER.info("Scheduling solver jobs...")
+        _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
 
 
 if __name__ == "__main__":
