@@ -178,6 +178,7 @@ def cli(verbose: bool = False, result_api: str = None, index_base_url: str = Non
 
     graph = GraphDatabase()
     graph.connect()
+    _LOGGER.info("Talking to graph database located at %r", graph.hosts)
 
     indexes = _register_indexes(graph, index_base_url)
     _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
