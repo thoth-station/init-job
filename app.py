@@ -184,6 +184,8 @@ def cli(verbose: bool = False, result_api: str = None, index_base_url: str = Non
 
     graph = GraphDatabase()
     graph.connect()
+    _LOGGER.info("Initializing schema")
+    graph.initialize_schema()
     _LOGGER.info("Talking to graph database located at %r", graph.hosts)
 
     _LOGGER.info("Registering indexes...")

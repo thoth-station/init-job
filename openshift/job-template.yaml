@@ -32,10 +32,10 @@ objects:
             component: init-job
         spec:
           restartPolicy: OnFailure
-          serviceAccountName: analyzer
+          serviceAccountName: ${SERVICE_ACCOUNT_NAME}
           containers:
             - name: init-job
-              image: init-job
+              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/init-job:latest"
               livenessProbe:
                 # Give analyzer 10 minutes to run this job results, kill it if it was not able result anything.
                 tcpSocket:
@@ -106,8 +106,28 @@ parameters:
     description: Log init-job actions
     displayName: Log init-job actions
     value: INFO
-  - description: Tag of the ImageStream to use
+  - description: Tag of the ImageStream to be used.
     displayName: ImageStream Tag
     required: true
     name: IMAGE_STREAM_TAG
     value: 'latest'
+  - description: Registry for the ImageStream to be used, lives in.
+    displayName: ImageStream Registry
+    required: true
+    name: IMAGE_STREAM_REGISTRY
+    value: "docker-registry.default.svc:5000"
+  - description: The Project where the ImageStream lives in.
+    displayName: ImageStream Project
+    required: true
+    name: IMAGE_STREAM_NAMESPACE
+    value: "thoth-infra-stage"
+  - description: Tag of the ImageStream to be used.
+    displayName: ImageStream Tag
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: "latest"
+  - description: Service account to be used.
+    displayName: Service account name.
+    required: true
+    name: SERVICE_ACCOUNT_NAME
+    value: "init-job"
