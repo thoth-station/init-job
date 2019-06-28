@@ -188,7 +188,8 @@ def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index
     envvar="THOTH_INIT_JOB_REGISTER_INDEXES_ONLY",
     help="Do not schedule solver jobs, only register indexes.",
 )
-def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, index_base_url: str = None, register_indexes_only: bool = False):
+def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, index_base_url:
+        str = None, register_indexes_only: bool = False):
     """Register AICoE indexes in Thoth's database."""
     graph = None
     openshift = None
@@ -219,6 +220,7 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
             _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core solver jobs!")
+
 
 if __name__ == "__main__":
     cli()

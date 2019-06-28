@@ -8,7 +8,7 @@ behave = "*"
 
 [packages]
 thoth-python = "*"
-click = "*"
+click = "==6.6"
 requests = "*"
 beautifulsoup4 = "*"
 lxml = "*"

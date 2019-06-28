@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "54bd2fee1a08f43b753bdd5157240e50bd4ef49dab7620c6e57e683c1419becf"
+            "sha256": "aa1ef707f7511401b5db654cecd29137f52ae5ec061d0281918ec626c8b47b2b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -122,11 +122,11 @@
         },
         "click": {
             "hashes": [
-                "sha256:2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13",
-                "sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7"
+                "sha256:cc6a19da8ebff6e7074f731447ef7e112bd23adf3de5c597cf9989f2fd8defe9",
+                "sha256:fcf697e1fd4b567d817c69dab10a4035937fe6af175c05fd6806b69f74cbc6c4"
             ],
             "index": "pypi",
-            "version": "==7.0"
+            "version": "==6.6"
         },
         "contoml": {
             "hashes": [
