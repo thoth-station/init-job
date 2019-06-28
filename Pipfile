@@ -4,10 +4,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+behave = "*"
 
 [packages]
 thoth-python = "*"
-click = "*"
+click = "==6.6"
 requests = "*"
 beautifulsoup4 = "*"
 lxml = "*"

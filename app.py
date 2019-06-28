@@ -84,20 +84,26 @@ def _list_available_indexes(index_base_url: str) -> list:
     return result
 
 
-def _register_indexes(graph: GraphDatabase, index_base_url: str) -> typing.List[str]:
+def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool = False) -> typing.List[str]:
     """Register available AICoE indexes into Thoth's database."""
     _LOGGER.info("Registering PyPI index %r", _PYPI_SIMPLE_API_URL)
     index_urls = [_PYPI_SIMPLE_API_URL]
 
-    graph.register_python_package_index(
-        index_urls[0],
-        warehouse_api_url=_PYPI_SIMPLE_API_URL,
-        verify_ssl=True
-    )
+    if not dry_run:
+        _LOGGER.info("Registering index %r", index_urls[0])
+
+        graph.register_python_package_index(
+            index_urls[0],
+            warehouse_api_url=_PYPI_SIMPLE_API_URL,
+            verify_ssl=True
+        )
 
     for index_url in _list_available_indexes(index_base_url):
         _LOGGER.info("Registering index %r", index_url)
-        graph.register_python_package_index(index_url)
+
+        if not dry_run:
+            graph.register_python_package_index(index_url)
+
         index_urls.append(index_url)
 
     return index_urls
@@ -154,6 +160,13 @@ def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index
     help="Be verbose about what's going on.",
 )
 @click.option(
+    "--dry-run",
+    "-n",
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_DRY_RUN",
+    help="Just print stuff on LOG, do not change any data.",
+)
+@click.option(
     "--index-base-url",
     "-i",
     type=str,
@@ -175,28 +188,38 @@ def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index
     envvar="THOTH_INIT_JOB_REGISTER_INDEXES_ONLY",
     help="Do not schedule solver jobs, only register indexes.",
 )
-def cli(verbose: bool = False, result_api: str = None, index_base_url: str = None, register_indexes_only: bool = False):
+def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, index_base_url:
+        str = None, register_indexes_only: bool = False):
     """Register AICoE indexes in Thoth's database."""
+    graph = None
+    openshift = None
+
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
 
-    openshift = OpenShift()
+    if not dry_run:
+        openshift = OpenShift()
 
-    graph = GraphDatabase()
-    graph.connect()
-    _LOGGER.info("Initializing schema")
-    graph.initialize_schema()
-    _LOGGER.info("Talking to graph database located at %r", graph.hosts)
+        graph = GraphDatabase()
+        graph.connect()
+        _LOGGER.info("Initializing schema")
+        graph.initialize_schema()
+        _LOGGER.info("Talking to graph database located at %r", graph.hosts)
+    elif dry_run:
+        _LOGGER.info("dry-run: not talking to OpenShift or Dgraph...")
 
     _LOGGER.info("Registering indexes...")
-    indexes = _register_indexes(graph, index_base_url)
+    indexes = _register_indexes(graph, index_base_url, dry_run)
 
     if not register_indexes_only:
         if not result_api:
             raise ValueError("No result API URL provided")
 
-        _LOGGER.info("Scheduling solver jobs...")
-        _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
+        if not dry_run:
+            _LOGGER.info("Scheduling solver jobs...")
+            _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
+        elif dry_run:
+            _LOGGER.info("dry-run: not scheduling core solver jobs!")
 
 
 if __name__ == "__main__":
