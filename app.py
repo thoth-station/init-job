@@ -95,14 +95,15 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
         graph.register_python_package_index(
             index_urls[0],
             warehouse_api_url=_PYPI_SIMPLE_API_URL,
-            verify_ssl=True
+            verify_ssl=True,
+            enabled=True,
         )
 
     for index_url in _list_available_indexes(index_base_url):
         _LOGGER.info("Registering index %r", index_url)
 
         if not dry_run:
-            graph.register_python_package_index(index_url)
+            graph.register_python_package_index(index_url, enabled=True)
 
         index_urls.append(index_url)
 
