@@ -18,7 +18,9 @@
 """Initialize a fresh Thoth deployment."""
 
 import logging
-import typing
+from typing import List
+from typing import Generator
+from urllib.parse import urljoin
 
 import requests
 import click
@@ -36,55 +38,93 @@ _DEFAULT_INDEX_BASE_URL = "https://tensorflow.pypi.thoth-station.ninja/index"
 _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 
 
-def _get_build_configuration(index_base_url, distro) -> list:
-    """Get available configration for a distro."""
-    build_configuration_url = index_base_url + "/" + distro
+def _html_parse_listing(url: str) -> Generator[str, None, None]:
+    """Parse listing of a HTML document."""
+    response = requests.get(url)
+    response.raise_for_status()
 
-    response = requests.get(build_configuration_url)
     soup = BeautifulSoup(response.text, "lxml")
-    table = soup.find("table")
-    if not table:
-        return []
-
-    configurations = []
-    for row in table.find_all("tr"):
-        for cell in row.find_all("td"):
-            if cell.a:
-                configuration = cell.a.text
-                if configuration == "Parent Directory":
-                    continue
-
-                url = build_configuration_url + configuration + "simple"
-                response = requests.get(url)
-                if response.status_code != 200:
-                    _LOGGER.warning("No simple index found on the given URL: %r", url)
-                    continue
-
-                configurations.append(url)
-
-    return configurations
-
-
-def _list_available_indexes(index_base_url: str) -> list:
-    """List available indexes on AICoE index."""
-    _LOGGER.info("Listing available indexes on AICoE index %r", index_base_url)
-    response = requests.get(index_base_url)
-    soup = BeautifulSoup(response.text, "lxml")
-
-    result = []
     for row in soup.find("table").find_all("tr"):
         for cell in row.find_all("td"):
             if cell.a:
-                distro = cell.a.text
-                if distro == "Parent Directory":
+                if cell.a.text == "Parent Directory":
                     continue
 
-                result.extend(_get_build_configuration(index_base_url, distro))
+                if not cell.a.text.endswith("/"):
+                    yield cell.a.text + "/"
+
+                yield cell.a.text
+
+
+def _get_build_configuration(url: str) -> List[str]:
+    """Get available configuration for a distro."""
+    result = []
+    for configuration in _html_parse_listing(url):
+        sub_url = urljoin(url, configuration)
+        present_subdirs = set(_html_parse_listing(sub_url))
+
+        if present_subdirs - {"simple/"}:
+            _LOGGER.error(
+                "Additional sub-directories not compliant with PEP-503 found (expected only 'simple/'): %r",
+                present_subdirs - {"simple/"}
+            )
+
+        if "simple/" not in present_subdirs:
+            _LOGGER.error(
+                "No 'simple/' found on URL %r, cannot treat as PEP-503 compliant simple API",
+                url,
+            )
+            continue
+
+        _LOGGER.info("Detected build configuration %r at %s", configuration[:-1], url)
+        result.append(urljoin(url, configuration))
 
     return result
 
 
-def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool = False) -> typing.List[str]:
+def _get_os_releases(url: str) -> List[str]:
+    """Parse operating systems and their versions available on AICoE indexes."""
+    result = []
+
+    os_names = list(_html_parse_listing(url))
+    if not os_names:
+        _LOGGER.warning("No operating systems detected at %r", url)
+
+    for os_name in os_names:
+        _LOGGER.info("Found operating system %r", os_name[:-1])
+        os_url = urljoin(url, os_name)
+        os_versions = list(_html_parse_listing(os_url))
+        if not os_versions:
+            _LOGGER.warning("No versions of operating system %r detected at %r", os_name[:-1], url)
+
+        for os_version in os_versions:
+            _LOGGER.info("Found operating system %r in version %r", os_name[:-1], os_version[:-1])
+            result.extend(_get_build_configuration(urljoin(os_url, os_version)))
+
+    return result
+
+
+def _list_available_indexes(url: str) -> List[str]:
+    """List available indexes on AICoE index."""
+    result = []
+    _LOGGER.info("Listing available indexes on AICoE index %r", url)
+
+    indexes = list(_html_parse_listing(url))
+    if not indexes:
+        _LOGGER.error("No AICoE indexes found at %r", url)
+
+    for item in indexes:
+        if item.lower() == "os/":
+            _LOGGER.info("Discovering available operating systems at %r", url)
+            result.extend(_get_os_releases(urljoin(url, item)))
+        else:
+            _LOGGER.info("Discovering compliant releases at %r", url)
+            result.extend(_get_build_configuration(urljoin(url, item)))
+
+    return result
+
+
+def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool = False) -> List[str]:
     """Register available AICoE indexes into Thoth's database."""
     _LOGGER.info("Registering PyPI index %r", _PYPI_SIMPLE_API_URL)
     index_urls = [_PYPI_SIMPLE_API_URL]
@@ -99,7 +139,11 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
             enabled=True,
         )
 
-    for index_url in _list_available_indexes(index_base_url):
+    aicoe_indexes = _list_available_indexes(index_base_url)
+    if not aicoe_indexes:
+        _LOGGER.error("No AICoE indexes to register")
+
+    for index_url in aicoe_indexes:
         _LOGGER.info("Registering index %r", index_url)
 
         if not dry_run:
@@ -112,11 +156,11 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
 
 def _do_schedule_core_solver_jobs(
     openshift: OpenShift,
-    index_urls: typing.List[str],
+    index_urls: List[str],
     package_name: str,
     package_version: str,
     output: str,
-):
+) -> None:
     """Run Python solvers for the given package in specified version."""
     _LOGGER.info(
         "Running solver jobs for package %r in version %r, results will be submitted to %r",
@@ -134,7 +178,7 @@ def _do_schedule_core_solver_jobs(
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
 
 
-def _schedule_core_solver_jobs(graph: GraphDatabase, openshift: OpenShift, index_urls: typing.List[str], result_api: str):  # Ignore PycodestyleBear (E501)
+def _schedule_core_solver_jobs(openshift: OpenShift, index_urls: List[str], result_api: str) -> None:
     """Run solver jobs for core components of Python packaging."""
     pypi = Source("https://pypi.org/simple")
     output = result_api + "/api/v1/solver-result"
@@ -198,6 +242,9 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
 
+    if not index_base_url.endswith("/"):
+        index_base_url += "/"
+
     if not dry_run:
         openshift = OpenShift()
 
@@ -218,7 +265,7 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
 
         if not dry_run:
             _LOGGER.info("Scheduling solver jobs...")
-            _schedule_core_solver_jobs(graph, openshift, indexes, result_api)
+            _schedule_core_solver_jobs(openshift, indexes, result_api)
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core solver jobs!")
 
