@@ -252,7 +252,6 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
         graph.connect()
         _LOGGER.info("Initializing schema")
         graph.initialize_schema()
-        _LOGGER.info("Talking to graph database located at %r", graph.hosts)
     elif dry_run:
         _LOGGER.info("dry-run: not talking to OpenShift or Dgraph...")
 
