@@ -77,7 +77,7 @@ def _get_build_configuration(url: str) -> List[str]:
             continue
 
         _LOGGER.info("Detected build configuration %r at %s", configuration[:-1], url)
-        result.append(urljoin(url, configuration))
+        result.append(urljoin(url, configuration + "simple"))
 
     return result
 
