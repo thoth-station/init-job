@@ -82,28 +82,6 @@ def _get_build_configuration(url: str) -> List[str]:
     return result
 
 
-def _get_os_releases(url: str) -> List[str]:
-    """Parse operating systems and their versions available on AICoE indexes."""
-    result = []
-
-    os_names = list(_html_parse_listing(url))
-    if not os_names:
-        _LOGGER.warning("No operating systems detected at %r", url)
-
-    for os_name in os_names:
-        _LOGGER.info("Found operating system %r", os_name[:-1])
-        os_url = urljoin(url, os_name)
-        os_versions = list(_html_parse_listing(os_url))
-        if not os_versions:
-            _LOGGER.warning("No versions of operating system %r detected at %r", os_name[:-1], url)
-
-        for os_version in os_versions:
-            _LOGGER.info("Found operating system %r in version %r", os_name[:-1], os_version[:-1])
-            result.extend(_get_build_configuration(urljoin(os_url, os_version)))
-
-    return result
-
-
 def _list_available_indexes(url: str) -> List[str]:
     """List available indexes on AICoE index."""
     result = []
@@ -114,12 +92,8 @@ def _list_available_indexes(url: str) -> List[str]:
         _LOGGER.error("No AICoE indexes found at %r", url)
 
     for item in indexes:
-        if item.lower() == "os/":
-            _LOGGER.info("Discovering available operating systems at %r", url)
-            result.extend(_get_os_releases(urljoin(url, item)))
-        else:
-            _LOGGER.info("Discovering compliant releases at %r", url)
-            result.extend(_get_build_configuration(urljoin(url, item)))
+        _LOGGER.info("Discovering compliant releases at %r", url)
+        result.extend(_get_build_configuration(urljoin(url, item)))
 
     return result
 
