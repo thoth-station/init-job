@@ -210,6 +210,8 @@ def _schedule_core_solver_jobs(openshift: OpenShift, index_urls: List[str], resu
 def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, index_base_url:
         str = None, register_indexes_only: bool = False):
     """Register AICoE indexes in Thoth's database."""
+    graph = None
+    
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
 
