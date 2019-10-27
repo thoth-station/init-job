@@ -6,12 +6,13 @@ metadata:
     description: >
       This is Init Job ImageStream, this template is meant to be used by Bots, but could also be used by humans...
     openshift.io/display-name: 'Thoth Core: Init Job'
-    version: 0.0.1
+    version: 0.1.0
     tags: poc,thoth,init-job,ai-stacks,aistacks
     template.openshift.io/documentation-url: https://github.com/Thoth-Station/
     template.openshift.io/long-description: >
       This is Init Job ImageStream, this template is meant to be used by Bots, but could also be used by humans...
     template.openshift.io/provider-display-name: Red Hat, Inc.
+    thoth-station.ninja/template-version: 0.1.0
   labels:
     template: init-job-imagestream
     app: thoth
@@ -21,6 +22,8 @@ objects:
   - kind: ImageStream
     apiVersion: image.openshift.io/v1
     metadata:
+      annotations:
+        thoth-station.ninja/template-version: 0.1.0
       labels:
         app: thoth
         component: init-job
