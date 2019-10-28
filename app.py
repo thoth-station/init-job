@@ -36,6 +36,7 @@ init_logging()
 _LOGGER = logging.getLogger("thoth.init_job")
 _DEFAULT_INDEX_BASE_URL = "https://tensorflow.pypi.thoth-station.ninja/index"
 _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
+_PYPI_WAREHOUSE_JSON_API_URL = "https://pypi.org/pypi"
 
 
 def _html_parse_listing(url: str) -> Generator[str, None, None]:
@@ -108,7 +109,7 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
 
         graph.register_python_package_index(
             index_urls[0],
-            warehouse_api_url=_PYPI_SIMPLE_API_URL,
+            warehouse_api_url=_PYPI_WAREHOUSE_JSON_API_URL,
             verify_ssl=True,
             enabled=True,
         )
