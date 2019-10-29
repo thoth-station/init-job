@@ -211,7 +211,7 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
         str = None, register_indexes_only: bool = False):
     """Register AICoE indexes in Thoth's database."""
     graph = None
-    
+
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
 
