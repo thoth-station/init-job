@@ -212,7 +212,6 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
         str = None, register_indexes_only: bool = False):
     """Register AICoE indexes in Thoth's database."""
     graph = None
-    openshift = None
 
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
@@ -221,8 +220,6 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
         index_base_url += "/"
 
     if not dry_run:
-        openshift = OpenShift()
-
         graph = GraphDatabase()
         graph.connect()
         _LOGGER.info("Initializing schema")
@@ -239,6 +236,7 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
 
         if not dry_run:
             _LOGGER.info("Scheduling solver jobs...")
+            openshift = OpenShift()
             _schedule_core_solver_jobs(openshift, indexes, result_api)
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core solver jobs!")
