@@ -153,8 +153,10 @@ def _do_schedule_core_solver_jobs(
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
 
 
-def _schedule_core_solver_jobs(openshift: OpenShift, index_urls: List[str], result_api: str) -> None:
+def _schedule_core_solver_jobs(index_urls: List[str], result_api: str) -> None:
     """Run solver jobs for core components of Python packaging."""
+    openshift = OpenShift()
+
     pypi = Source("https://pypi.org/simple")
     output = result_api + "/api/v1/solver-result"
 
@@ -236,8 +238,7 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
 
         if not dry_run:
             _LOGGER.info("Scheduling solver jobs...")
-            openshift = OpenShift()
-            _schedule_core_solver_jobs(openshift, indexes, result_api)
+            _schedule_core_solver_jobs(indexes, result_api)
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core solver jobs!")
 
