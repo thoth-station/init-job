@@ -41,10 +41,10 @@
         },
         "amun": {
             "hashes": [
-                "sha256:31562e69bdf02bbd8bfe3dd791cde337b4888036ac8c2656e5f8f60885e88499",
-                "sha256:8c1519a844b8dc61a0aadc3be6a436358acf7df611ed2ec64f6cfff0ea6535c5"
+                "sha256:31874a37ac91c011c0b4958dcaaf4fe7e725f5247db4195e9ed21ff2c635233d",
+                "sha256:a03dd036268d8d18a0872308f1be7bb6d93716b1fe7fd26340f578edeca7c25b"
             ],
-            "version": "==0.3.2"
+            "version": "==0.3.3"
         },
         "argo-workflows": {
             "hashes": [
@@ -85,17 +85,17 @@
         },
         "boto3": {
             "hashes": [
-                "sha256:916efdecda945daba08dca9032373440db681e53e6b46e7d0cae104ffd5ac7ca",
-                "sha256:925899699b81977b75d4036fc478209916f4547f8683e5c7b1ad678317a6652e"
+                "sha256:287ae58a50cc23f4254740c5388abc3c5f25891f062c40597a997f21d1f960db",
+                "sha256:71f2346d089aba5f55eb2effe5e3c6acc1b851a519bcc4f147006e1db8548fe5"
             ],
-            "version": "==1.11.3"
+            "version": "==1.11.6"
         },
         "botocore": {
             "hashes": [
-                "sha256:799562d2af023f49518676c6b72ee07325da027513406b4b9d8e5b74ecea8257",
-                "sha256:80e6522c4bb8d98dab9fd77708c6722bee775c7b85a77326ef44543062a17462"
+                "sha256:629ce71d425b9bc55553a7b0b0584c162edff04b00eb225ccec8f72cadc1c63c",
+                "sha256:7bd74f1c0f99344571fd322f2d7708deac0546b4ce19f52e971cc6daec4e2167"
             ],
-            "version": "==1.14.3"
+            "version": "==1.14.6"
         },
         "cachetools": {
             "hashes": [
@@ -232,9 +232,9 @@
         },
         "mako": {
             "hashes": [
-                "sha256:a36919599a9b7dc5d86a7a8988f23a9a3a3d083070023bab23d64f7f1d1e0a4b"
+                "sha256:2984a6733e1d472796ceef37ad48c26f4a984bb18119bb2dbc37a44d8f6e75a4"
             ],
-            "version": "==1.1.0"
+            "version": "==1.1.1"
         },
         "markupsafe": {
             "hashes": [
@@ -484,10 +484,10 @@
         },
         "ruamel.yaml": {
             "hashes": [
-                "sha256:0db639b1b2742dae666c6fc009b8d1931ef15c9276ef31c0673cc6dcf766cf40",
-                "sha256:412a6f5cfdc0525dee6a27c08f5415c7fd832a7afcb7a0ed7319628aed23d408"
+                "sha256:91d6bfe4fce401a00388deb0f5d29e10d2d3683a868c1113ae16bbc351ceb6a4",
+                "sha256:966e5a049eebf011c90424b9ec7dab6358cee8de0907354b27a27f20a8c4c2ec"
             ],
-            "version": "==0.16.5"
+            "version": "==0.16.6"
         },
         "ruamel.yaml.clib": {
             "hashes": [
@@ -516,10 +516,10 @@
         },
         "s3transfer": {
             "hashes": [
-                "sha256:2157640a47c8b8fa2071bdd7b0d57378ec8957eede3bd083949c2dcc4d9b0dd4",
-                "sha256:e3343ae0f371781c17590cf06cb818a54484fbac9a65a5be7603a39b0a6d7b31"
+                "sha256:248dffd2de2dfb870c507b412fc22ed37cd3255293e293c395158e7c55fbe5f9",
+                "sha256:80ed96731b3bd77395cd6197246069092015e1124164b2c152c8f741a823dd04"
             ],
-            "version": "==0.3.0"
+            "version": "==0.3.1"
         },
         "semantic-version": {
             "hashes": [
@@ -563,11 +563,11 @@
         },
         "thoth-common": {
             "hashes": [
-                "sha256:120de30be4bebe890fbca56c4ff11765296f25ed92c738aaf8707d53f4afc364",
-                "sha256:fb324c6ec5ac0ddcd8c367eb25e8e8d8c425c7b8825e4df4f2ce5849a7e3e168"
+                "sha256:74e97d1d1aa8b55ddf58b3cff3783499903b2e870c0a521864e9f09ad49ce4ab",
+                "sha256:a18a5eb57fabf3d82a762e4a95e6c050c447a341e28aaf1c8278c9377bcb8367"
             ],
             "index": "pypi",
-            "version": "==0.9.28"
+            "version": "==0.9.29"
         },
         "thoth-python": {
             "hashes": [
