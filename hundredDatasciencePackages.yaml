@@ -57,7 +57,7 @@ hundred_datascience_packages:
   - numexpr
   - numpy
   - onnx
-  - opencv
+  - opencv-python
   - paddlepaddle
   - pandas
   - pandas-profiling
