@@ -1,6 +1,7 @@
 hundred_datascience_packages:
   - alibi
   - altair
+  - ax-platform
   - arviz
   - autogluon
   - autokeras
@@ -11,6 +12,7 @@ hundred_datascience_packages:
   - boto3
   - catboost
   - cloudpickle
+  - ConfigSpace
   - cortex
   - cudf
   - cuml
@@ -27,18 +29,23 @@ hundred_datascience_packages:
   - dvc
   - eli5
   - fastai
+  - fiscalyear
   - fbprophet
   - Flask
   - gensim
   - graphviz
+  - gspread-pandas
   - h5py
   - horovod
+  - hpbandster
   - interpret
   - jellyfish
   - jax
   - jupyter
   - jupyter-datatables
   - jupyter-nbrequirements
+  - jupyterlab
+  - jupyterlab-templates
   - karateclub
   - Keras
   - librosa
@@ -53,6 +60,7 @@ hundred_datascience_packages:
   - networkx
   - nltk
   - nni
+  - notify-run
   - numba
   - numexpr
   - numpy
@@ -95,10 +103,12 @@ hundred_datascience_packages:
   - tokenizers
   - transformers
   - Theano
+  - tdda
   - torch
   - torch-geometric
   - vega
   - vincent
   - voila
+  - word2vec
   - xgboost
   - xlrd
