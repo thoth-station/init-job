@@ -28,7 +28,6 @@ hundred_datascience_packages:
   - dowhy
   - dtale
   - dvc
-  - elastic
   - eli5
   - fastai
   - fiber
@@ -91,7 +90,6 @@ hundred_datascience_packages:
   - rapidfuzz
   - ray
   - requests
-  - serve
   - s3fs
   - scikit-learn
   - scipy
@@ -112,6 +110,8 @@ hundred_datascience_packages:
   - tdda
   - torch
   - torch-geometric
+  - torchelastic
+  - torchserve
   - vega
   - vincent
   - voila
