@@ -11,6 +11,7 @@ hundred_datascience_packages:
   - bokeh
   - boto3
   - catboost
+  - causalml
   - cloudpickle
   - ConfigSpace
   - cortex
@@ -27,8 +28,10 @@ hundred_datascience_packages:
   - dowhy
   - dtale
   - dvc
+  - elastic
   - eli5
   - fastai
+  - fiber
   - fiscalyear
   - fbprophet
   - Flask
@@ -51,6 +54,7 @@ hundred_datascience_packages:
   - librosa
   - lightgbm
   - lime
+  - ludwig
   - Markdown
   - matplotlib
   - markovify
@@ -71,6 +75,7 @@ hundred_datascience_packages:
   - pandas-profiling
   - papermill
   - patsy
+  - petastorm
   - pillow
   - plotly
   - pomegranate
@@ -86,6 +91,7 @@ hundred_datascience_packages:
   - rapidfuzz
   - ray
   - requests
+  - serve
   - s3fs
   - scikit-learn
   - scipy
