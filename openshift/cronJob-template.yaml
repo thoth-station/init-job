@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: init-job-cronjob
+  annotations:
+    description: This is Thoth Core - Init Job
+    openshift.io/display-name: 'Thoth: Init Job'
+    version: 0.1.0
+    tags: poc,thoth,ai-stacks,init-job
+    template.openshift.io/documentation-url: https://github.com/Thoth-Station/
+    template.openshift.io/long-description: >
+      This template defines resources needed to run recommendation logic of Thoth to OpenShift.
+    template.openshift.io/provider-display-name: Red Hat, Inc.
+    thoth-station.ninja/template-version: 0.1.0
+  labels:
+    app: thoth
+    template: init-job-cronjob
+    component: init-job
+
+parameters:
+  - name: THOTH_LOG_INIT_JOB
+    required: false
+    description: Log init-job actions
+    displayName: Log init-job actions
+    value: INFO
+  - description: Registry for the ImageStream to be used, lives in.
+    displayName: ImageStream Registry
+    required: true
+    name: IMAGE_STREAM_REGISTRY
+    value: "docker-registry.default.svc:5000"
+  - description: The Project where the ImageStream lives in.
+    displayName: ImageStream Project
+    required: true
+    name: IMAGE_STREAM_NAMESPACE
+    value: "thoth-infra-stage"
+  - description: Tag of the ImageStream to be used.
+    displayName: ImageStream Tag
+    required: true
+    name: IMAGE_STREAM_TAG
+    value: "latest"
+  - description: Service account to be used.
+    displayName: Service account name.
+    required: true
+    name: SERVICE_ACCOUNT_NAME
+    value: "init-job"
+
+objects:
+  - apiVersion: batch/v1beta1
+    kind: CronJob
+    metadata:
+      annotations:
+        thoth-station.ninja/template-version: 0.1.0
+      name: init-job
+      labels:
+        app: thoth
+        component: init-job
+    spec:
+      schedule: "0 */12 * * *"
+      jobTemplate:
+        spec:
+          template:
+            metadata:
+              labels:
+                app: thoth
+                component: init-job
+            spec:
+              restartPolicy: Never
+              serviceAccountName: ${SERVICE_ACCOUNT_NAME}
+              containers:
+                - name: init-job
+                  image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/init-job:${IMAGE_STREAM_TAG}"
+                  livenessProbe:
+                    # Give analyzer 10 minutes to run this job results, kill it if it was not able result anything.
+                    tcpSocket:
+                      port: 80
+                    initialDelaySeconds: 600
+                    failureThreshold: 1
+                    periodSeconds: 10
+                  env:
+                    - name: THOTH_LOG_INIT_JOB
+                      value: "${THOTH_LOG_INIT_JOB}"
+                    - name: KUBERNETES_API_URL
+                      value: https://kubernetes.default.svc.cluster.local
+                    - name: KUBERNETES_VERIFY_TLS
+                      value: "0"
+                    - name: THOTH_RESULT_API_URL
+                      value: http://result-api
+                    - name: THOTH_INIT_JOB_REGISTER_INDEXES_ONLY
+                      value: "true"
+                    - name: THOTH_MIDDLETIER_NAMESPACE
+                      valueFrom:
+                        configMapKeyRef:
+                          name: thoth
+                          key: middletier-namespace
+                    - name: THOTH_INFRA_NAMESPACE
+                      valueFrom:
+                        configMapKeyRef:
+                          name: thoth
+                          key: infra-namespace
+                    - name: SENTRY_DSN
+                      valueFrom:
+                        secretKeyRef:
+                          key: sentry-dsn
+                          name: thoth
+                    - name: THOTH_DEPLOYMENT_NAME
+                      valueFrom:
+                        configMapKeyRef:
+                          key: storage-bucket-name
+                          name: thoth
+                    - name: KNOWLEDGE_GRAPH_HOST
+                      valueFrom:
+                        configMapKeyRef:
+                          key: postgresql-host
+                          name: thoth
+                    - name: KNOWLEDGE_GRAPH_PORT
+                      value: "5432"
+                    - name: KNOWLEDGE_GRAPH_SSL_DISABLED
+                      value: "1"
+                    - name: KNOWLEDGE_GRAPH_USER
+                      valueFrom:
+                        secretKeyRef:
+                          name: postgresql
+                          key: database-user
+                    - name: KNOWLEDGE_GRAPH_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: postgresql
+                          key: database-password
+                    - name: KNOWLEDGE_GRAPH_DATABASE
+                      valueFrom:
+                        secretKeyRef:
+                          name: postgresql
+                          key: database-name
+                  resources:
+                    limits:
+                      memory: '256Mi'
+                      cpu: '500m'
+                    requests:
+                      memory: '256Mi'
+                      cpu: '500m'
