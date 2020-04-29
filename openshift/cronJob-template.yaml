@@ -83,8 +83,6 @@ objects:
                       value: https://kubernetes.default.svc.cluster.local
                     - name: KUBERNETES_VERIFY_TLS
                       value: "0"
-                    - name: THOTH_RESULT_API_URL
-                      value: http://result-api
                     - name: THOTH_INIT_JOB_REGISTER_INDEXES_ONLY
                       value: "1"
                     - name: THOTH_MIDDLETIER_NAMESPACE
