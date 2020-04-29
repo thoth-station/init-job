@@ -38,7 +38,7 @@ objects:
           serviceAccountName: ${SERVICE_ACCOUNT_NAME}
           containers:
             - name: init-job
-              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/init-job:latest"
+              image: "${IMAGE_STREAM_REGISTRY}/${IMAGE_STREAM_NAMESPACE}/init-job:${IMAGE_STREAM_TAG}"
               livenessProbe:
                 # Give analyzer 10 minutes to run this job results, kill it if it was not able result anything.
                 tcpSocket:
@@ -137,11 +137,6 @@ parameters:
     required: true
     name: IMAGE_STREAM_NAMESPACE
     value: "thoth-infra-stage"
-  - description: Tag of the ImageStream to be used.
-    displayName: ImageStream Tag
-    required: true
-    name: IMAGE_STREAM_TAG
-    value: "latest"
   - description: Service account to be used.
     displayName: Service account name.
     required: true
