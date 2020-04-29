@@ -137,11 +137,6 @@ parameters:
     required: true
     name: IMAGE_STREAM_NAMESPACE
     value: "thoth-infra-stage"
-  - description: Tag of the ImageStream to be used.
-    displayName: ImageStream Tag
-    required: true
-    name: IMAGE_STREAM_TAG
-    value: "latest"
   - description: Service account to be used.
     displayName: Service account name.
     required: true
