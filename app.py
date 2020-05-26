@@ -128,7 +128,7 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
 
 
 def _take_data_science_packages() -> List[str]:
-    """Take list of Python Package for data science."""
+    """Take list of Python Packages for data science."""
     current_path = Path.cwd()
     complete_file_path = current_path.joinpath("hundredsDatasciencePackages.yaml")
 
@@ -144,7 +144,7 @@ def _take_data_science_packages() -> List[str]:
 
 
 def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List[str]) -> None:
-    """Run solver jobs for default Python packages (core or data science)."""
+    """Run solver jobs for Python packages list selected."""
     openshift = OpenShift()
 
     pypi = Source("https://pypi.org/simple")
