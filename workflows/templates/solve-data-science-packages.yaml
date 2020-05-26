@@ -21,6 +21,10 @@
             env:
               - name: THOTH_LOG_INIT_JOB
                 value: "{{inputs.parameters.THOTH_LOG_INIT_JOB}}"
+              - name: KUBERNETES_API_URL
+                value: https://kubernetes.default.svc.cluster.local
+              - name: KUBERNETES_VERIFY_TLS
+                value: "0"
               - name: THOTH_MIDDLETIER_NAMESPACE
                 valueFrom:
                   configMapKeyRef:
