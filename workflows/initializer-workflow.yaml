@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  geenrateName: "${WORKFLOW_ID}"
+  generateName: initializer-
   annotations:
     thoth-station.ninja/template-version: 0.1.0
   labels:
