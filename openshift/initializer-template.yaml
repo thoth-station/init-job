@@ -22,13 +22,19 @@ parameters:
     displayName: "Workflow UUID"
     required: true
 
+  - name: THOTH_LOG_INIT_JOB
+    required: false
+    description: Log init-job actions
+    displayName: Log init-job actions
+    value: INFO
+
 objects:
   - apiVersion: argoproj.io/v1alpha1
     kind: Workflow
     metadata:
       name: "${WORKFLOW_ID}"
       annotations:
-        thoth-station.ninja/template-version: 0.1.2
+        thoth-station.ninja/template-version: 0.1.0
       labels:
         app: thoth
         component: initializer
@@ -37,6 +43,10 @@ objects:
       podGC:
         strategy: OnWorkflowSuccess
       entrypoint: initializer
+      arguments:
+        parameters:
+          - name: THOTH_LOG_INIT_JOB
+            value: "${THOTH_LOG_INIT_JOB}"
       volumes:
         - name: workdir
           emptyDir: {}
@@ -50,6 +60,10 @@ objects:
                 templateRef:
                   name: "initialize-schema"
                   template: "initialize-schema"
+                arguments:
+                  parameters:
+                    - name: THOTH_LOG_INIT_JOB
+                      value: "{{workflow.parameters.THOTH_LOG_INIT_JOB}}"
 
               - name: "register-indexes"
                 dependencies:
@@ -57,6 +71,10 @@ objects:
                 templateRef:
                   name: "register-indexes"
                   template: "register-indexes"
+                arguments:
+                  parameters:
+                    - name: THOTH_LOG_INIT_JOB
+                      value: "{{workflow.parameters.THOTH_LOG_INIT_JOB}}"
 
               - name: "solve-core-packages"
                 dependencies:
@@ -64,6 +82,10 @@ objects:
                 templateRef:
                   name: "solve-core-packages"
                   template: "solve-core-packages"
+                arguments:
+                  parameters:
+                    - name: THOTH_LOG_INIT_JOB
+                      value: "{{workflow.parameters.THOTH_LOG_INIT_JOB}}"
 
               - name: "solve-data-science-packages"
                 dependencies:
@@ -71,3 +93,7 @@ objects:
                 templateRef:
                   name: "solve-data-science-packages"
                   template: "solve-data-science-packages"
+                arguments:
+                  parameters:
+                    - name: THOTH_LOG_INIT_JOB
+                      value: "{{workflow.parameters.THOTH_LOG_INIT_JOB}}"

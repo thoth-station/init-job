@@ -13,14 +13,14 @@
         - name: register-indexes
           inputs:
             parameters:
-              - name: "IMAGE_STREAM_REGISTRY"
-              - name: "IMAGE_STREAM_NAMESPACE"
-              - name: "IMAGE_STREAM_TAG"
+              - name: "THOTH_LOG_INIT_JOB"
           container:
             name: register-indexes
             image: init-job
-            command: ['pipenv', 'run', python3', 'app.py', '--register-indexes']
+            command: ['python3', 'app.py', '--register-indexes']
             env:
+              - name: THOTH_LOG_INIT_JOB
+                value: "{{inputs.parameters.THOTH_LOG_INIT_JOB}}"
               - name: KNOWLEDGE_GRAPH_HOST
                 valueFrom:
                   configMapKeyRef:
@@ -52,4 +52,3 @@
               requests:
                 cpu: 250m
                 memory: 256Mi
-    
