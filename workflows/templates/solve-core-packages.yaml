@@ -2,20 +2,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: register-indexes
+  name: solve-core-packages
   annotations:
     thoth-station.ninja/template-version: 0.1.0
   labels:
     app: thoth
-    component: register-indexes
+    component: solve-core-packages
 spec:
   templates:
-    - name: register-indexes
+    - name: solve-core-packages
       inputs:
         parameters:
           - name: "THOTH_LOG_INIT_JOB"
       container:
-        name: register-indexes
+        name: solve-core-packages
         image: init-job
         command: ['python3', 'app.py', '--solve-core-packages']
         env:
