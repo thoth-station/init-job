@@ -41,6 +41,7 @@ _DEFAULT_INDEX_BASE_URL = "https://tensorflow.pypi.thoth-station.ninja/index"
 _SOLVER_OUTPUT = os.getenv("THOTH_SOLVER_OUTPUT", "http://result-api/api/v1/solver-result")
 _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 _PYPI_WAREHOUSE_JSON_API_URL = "https://pypi.org/pypi"
+_CORE_PACKAGES = ["setuptools", "six", "pip"]
 
 
 def _html_parse_listing(url: str) -> Generator[str, None, None]:
@@ -145,14 +146,22 @@ def _take_data_science_packages() -> List[str]:
 
 def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List[str]) -> None:
     """Run solver jobs for Python packages list selected."""
-    openshift = OpenShift()
+    openshift = OpenShift(kubernetes_verify_tls=False)
 
-    pypi = Source("https://pypi.org/simple")
+    for index_url in index_urls:
+        _LOGGER.debug("consider index %r", index_url)
+        source = Source(index_url)
 
-    for package_name in packages:
-        _LOGGER.debug(f"Obtainig {package_name} versions")
-        for version in pypi.get_package_versions(package_name):
-            _do_schedule_solver_jobs(openshift, index_urls, package_name, version, _SOLVER_OUTPUT)
+        for package_name in packages:
+            _LOGGER.debug("Obtaining %r versions", package_name)
+
+            try:
+                versions = source.get_package_versions(package_name)
+                for version in versions:
+                    _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
+                    _do_schedule_solver_jobs(openshift, index_urls, package_name, version, _SOLVER_OUTPUT)
+            except Exception as e:
+                _LOGGER.warning(e)
 
 
 def _do_schedule_solver_jobs(
@@ -235,6 +244,8 @@ def cli(
     if not dry_run:
         graph = GraphDatabase()
         graph.connect()
+    elif dry_run:
+        _LOGGER.info("dry-run: not talking to Thoth Knowledge Graph...")
 
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
@@ -247,37 +258,36 @@ def cli(
             _LOGGER.info("Initializing schema")
             graph.initialize_schema()
         elif dry_run:
-            _LOGGER.info("dry-run: not talking to Thoth Knowledge Graph...")
+            _LOGGER.info("dry-run: not initializing schema...")
 
     if register_indexes:
         if not dry_run:
             _LOGGER.info("Registering indexes...")
         elif dry_run:
-            _LOGGER.info("dry-run: not talking to Thoth Knowledge Graph...")
+            _LOGGER.info("dry-run: not registering indexes...")
 
         indexes = _register_indexes(graph, index_base_url, dry_run)
 
     if solve_core_packages:
-        core_packages = ["setuptools", "six", "pip"]
 
         if not dry_run:
-            _LOGGER.info("Take registered indexes")
+            _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
             registered_indexes = graph.get_python_package_index_urls_all()
 
             if not registered_indexes:
                 raise ValueError("No registered indexes found in the database")
 
             _LOGGER.info("Scheduling solver jobs for core packages...")
-            _schedule_default_packages_solver_jobs(packages=core_packages, index_urls=registered_indexes)
+            _schedule_default_packages_solver_jobs(packages=_CORE_PACKAGES, index_urls=registered_indexes)
 
         elif dry_run:
-            _LOGGER.info("Not scheduling core packages solver jobs!")
+            _LOGGER.info("dry-run: not scheduling core packages solver jobs!")
 
     if solve_data_science_packages:
         data_science_packages = _take_data_science_packages()
 
         if not dry_run:
-            _LOGGER.info("Take registered indexes")
+            _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
             registered_indexes = graph.get_python_package_index_urls_all()
 
             if not registered_indexes:
