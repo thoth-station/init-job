@@ -33,6 +33,7 @@ from thoth.common import init_logging
 from thoth.common import OpenShift
 from thoth.python import Source
 from thoth.storages import GraphDatabase
+from thoth.initializer import __service_version__
 
 init_logging()
 
@@ -42,6 +43,8 @@ _SOLVER_OUTPUT = os.getenv("THOTH_SOLVER_OUTPUT", "http://result-api/api/v1/solv
 _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 _PYPI_WAREHOUSE_JSON_API_URL = "https://pypi.org/pypi"
 _CORE_PACKAGES = ["setuptools", "six", "pip"]
+
+_LOGGER.info(f"Thoth Initializer v%s", __service_version__)
 
 
 def _html_parse_listing(url: str) -> Generator[str, None, None]:
