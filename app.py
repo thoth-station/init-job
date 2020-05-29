@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # thoth-init-job
-# Copyright(C) 2018, 2019 Fridolin Pokorny
+# Copyright(C) 2018, 2019, 2020 Fridolin Pokorny, Francesco Murdaca
 #
 # This program is free software: you can redistribute it and / or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,9 +18,12 @@
 """Initialize a fresh Thoth deployment."""
 
 import logging
+import yaml
+import os
 from typing import List
 from typing import Generator
 from urllib.parse import urljoin
+from pathlib import Path
 
 import requests
 import click
@@ -35,8 +38,10 @@ init_logging()
 
 _LOGGER = logging.getLogger("thoth.init_job")
 _DEFAULT_INDEX_BASE_URL = "https://tensorflow.pypi.thoth-station.ninja/index"
+_SOLVER_OUTPUT = os.getenv("THOTH_SOLVER_OUTPUT", "http://result-api/api/v1/solver-result")
 _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 _PYPI_WAREHOUSE_JSON_API_URL = "https://pypi.org/pypi"
+_CORE_PACKAGES = ["setuptools", "six", "pip"]
 
 
 def _html_parse_listing(url: str) -> Generator[str, None, None]:
@@ -67,14 +72,11 @@ def _get_build_configuration(url: str) -> List[str]:
         if present_subdirs - {"simple/"}:
             _LOGGER.error(
                 "Additional sub-directories not compliant with PEP-503 found (expected only 'simple/'): %r",
-                present_subdirs - {"simple/"}
+                present_subdirs - {"simple/"},
             )
 
         if "simple/" not in present_subdirs:
-            _LOGGER.error(
-                "No 'simple/' found on URL %r, cannot treat as PEP-503 compliant simple API",
-                url,
-            )
+            _LOGGER.error("No 'simple/' found on URL %r, cannot treat as PEP-503 compliant simple API", url)
             continue
 
         _LOGGER.info("Detected build configuration %r at %s", configuration[:-1], url)
@@ -108,10 +110,7 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
         _LOGGER.info("Registering index %r", index_urls[0])
 
         graph.register_python_package_index(
-            index_urls[0],
-            warehouse_api_url=_PYPI_WAREHOUSE_JSON_API_URL,
-            verify_ssl=True,
-            enabled=True,
+            index_urls[0], warehouse_api_url=_PYPI_WAREHOUSE_JSON_API_URL, verify_ssl=True, enabled=True
         )
 
     aicoe_indexes = _list_available_indexes(index_base_url)
@@ -129,12 +128,44 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
     return index_urls
 
 
-def _do_schedule_core_solver_jobs(
-    openshift: OpenShift,
-    index_urls: List[str],
-    package_name: str,
-    package_version: str,
-    output: str,
+def _take_data_science_packages() -> List[str]:
+    """Take list of Python Packages for data science."""
+    current_path = Path.cwd()
+    complete_file_path = current_path.joinpath("hundredsDatasciencePackages.yaml")
+
+    with open(complete_file_path) as yaml_file:
+        requested_packages = yaml.safe_load(yaml_file)
+
+    data_science_packages = []
+    for package_name in requested_packages["hundreds_datascience_packages"]:
+        _LOGGER.info("Registering package %r", package_name)
+        data_science_packages.append(package_name)
+
+    return data_science_packages
+
+
+def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List[str]) -> None:
+    """Run solver jobs for Python packages list selected."""
+    openshift = OpenShift()
+
+    for index_url in index_urls:
+        _LOGGER.debug("consider index %r", index_url)
+        source = Source(index_url)
+
+        for package_name in packages:
+            _LOGGER.debug("Obtaining %r versions", package_name)
+
+            try:
+                versions = source.get_package_versions(package_name)
+                for version in versions:
+                    _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
+                    _do_schedule_solver_jobs(openshift, index_urls, package_name, version, _SOLVER_OUTPUT)
+            except Exception as e:
+                _LOGGER.exception(str(exc))
+
+
+def _do_schedule_solver_jobs(
+    openshift: OpenShift, index_urls: List[str], package_name: str, package_version: str, output: str
 ) -> None:
     """Run Python solvers for the given package in specified version."""
     _LOGGER.info(
@@ -145,41 +176,15 @@ def _do_schedule_core_solver_jobs(
     )
 
     solvers_run = openshift.schedule_all_solvers(
-        packages=f"{package_name}=={package_version}",
-        output=output,
-        indexes=index_urls,
+        packages=f"{package_name}==={package_version}", output=output, indexes=index_urls
     )
 
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
 
 
-def _schedule_core_solver_jobs(index_urls: List[str], result_api: str) -> None:
-    """Run solver jobs for core components of Python packaging."""
-    openshift = OpenShift()
-
-    pypi = Source("https://pypi.org/simple")
-    output = result_api + "/api/v1/solver-result"
-
-    _LOGGER.debug("Obtainig setuptools versions")
-    for version in pypi.get_package_versions("setuptools"):
-        _do_schedule_core_solver_jobs(openshift, index_urls, "setuptools", version, output)
-
-    _LOGGER.debug("Obtainig six versions")
-    for version in pypi.get_package_versions("six"):
-        _do_schedule_core_solver_jobs(openshift, index_urls, "six", version, output)
-
-    _LOGGER.debug("Obtainig pip versions")
-    for version in pypi.get_package_versions("pip"):
-        _do_schedule_core_solver_jobs(openshift, index_urls, "pip", version, output)
-
-
 @click.command()
 @click.option(
-    "--verbose",
-    "-v",
-    is_flag=True,
-    envvar="THOTH_VERBOSE_INIT_JOB",
-    help="Be verbose about what's going on.",
+    "--verbose", "-v", is_flag=True, envvar="THOTH_VERBOSE_INIT_JOB", help="Be verbose about what's going on."
 )
 @click.option(
     "--dry-run",
@@ -197,23 +202,50 @@ def _schedule_core_solver_jobs(index_urls: List[str], result_api: str) -> None:
     help="AICoE URL base for discovering packages.",
 )
 @click.option(
-    "--result-api",
-    "-r",
-    type=str,
-    envvar="THOTH_RESULT_API_URL",
-    help="AICoE URL base for discovering packages.",
-)
-@click.option(
-    "--register-indexes-only",
+    "--initialize-schema",
     required=False,
     is_flag=True,
-    envvar="THOTH_INIT_JOB_REGISTER_INDEXES_ONLY",
-    help="Do not schedule solver jobs, only register indexes.",
+    envvar="THOTH_INIT_JOB_INITIALIZE_SCHEMA",
+    help="Initialize schema in Thoth Knowledge Graph.",
 )
-def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, index_base_url:
-        str = None, register_indexes_only: bool = False):
+@click.option(
+    "--register-indexes",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_REGISTER_INDEXES",
+    help="Register indexes in Thoth Knowledge Graph.",
+)
+@click.option(
+    "--solve-core-packages",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_REGISTER_CORE_PACKAGES",
+    help="Schedule solver jobs for core packages.",
+)
+@click.option(
+    "--solve-data_science-packages",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_REGISTER_DATA_SCIENCE_PACKAGES",
+    help="Schedule solver jobs for data science packages.",
+)
+def cli(
+    verbose: bool = False,
+    dry_run: bool = False,
+    index_base_url: str = None,
+    initialize_schema: bool = False,
+    register_indexes: bool = False,
+    solve_core_packages: bool = False,
+    solve_data_science_packages: bool = False,
+):
     """Register AICoE indexes in Thoth's database."""
     graph = None
+
+    if not dry_run:
+        graph = GraphDatabase()
+        graph.connect()
+    elif dry_run:
+        _LOGGER.info("dry-run: not talking to Thoth Knowledge Graph...")
 
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
@@ -221,26 +253,51 @@ def cli(verbose: bool = False, dry_run: bool = False, result_api: str = None, in
     if not index_base_url.endswith("/"):
         index_base_url += "/"
 
-    if not dry_run:
-        graph = GraphDatabase()
-        graph.connect()
-        _LOGGER.info("Initializing schema")
-        graph.initialize_schema()
-    elif dry_run:
-        _LOGGER.info("dry-run: not talking to OpenShift or Dgraph...")
+    if initialize_schema:
+        if not dry_run:
+            _LOGGER.info("Initializing schema")
+            graph.initialize_schema()
+        elif dry_run:
+            _LOGGER.info("dry-run: not initializing schema...")
 
-    _LOGGER.info("Registering indexes...")
-    indexes = _register_indexes(graph, index_base_url, dry_run)
+    if register_indexes:
+        if not dry_run:
+            _LOGGER.info("Registering indexes...")
+        elif dry_run:
+            _LOGGER.info("dry-run: not registering indexes...")
 
-    if not register_indexes_only:
-        if not result_api:
-            raise ValueError("No result API URL provided")
+        indexes = _register_indexes(graph, index_base_url, dry_run)
+
+    if solve_core_packages:
 
         if not dry_run:
-            _LOGGER.info("Scheduling solver jobs...")
-            _schedule_core_solver_jobs(indexes, result_api)
+            _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
+            registered_indexes = graph.get_python_package_index_urls_all()
+
+            if not registered_indexes:
+                raise ValueError("No registered indexes found in the database")
+
+            _LOGGER.info("Scheduling solver jobs for core packages...")
+            _schedule_default_packages_solver_jobs(packages=_CORE_PACKAGES, index_urls=registered_indexes)
+
         elif dry_run:
-            _LOGGER.info("dry-run: not scheduling core solver jobs!")
+            _LOGGER.info("dry-run: not scheduling core packages solver jobs!")
+
+    if solve_data_science_packages:
+        data_science_packages = _take_data_science_packages()
+
+        if not dry_run:
+            _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
+            registered_indexes = graph.get_python_package_index_urls_all()
+
+            if not registered_indexes:
+                raise ValueError("No registered indexes found in the database")
+
+            _LOGGER.info("Scheduling solver jobs for data science packages...")
+            _schedule_default_packages_solver_jobs(packages=data_science_packages, index_urls=registered_indexes)
+
+        elif dry_run:
+            _LOGGER.info("dry-run: not scheduling data science packages solver jobs!")
 
 
 if __name__ == "__main__":
