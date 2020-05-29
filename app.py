@@ -146,7 +146,7 @@ def _take_data_science_packages() -> List[str]:
 
 def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List[str]) -> None:
     """Run solver jobs for Python packages list selected."""
-    openshift = OpenShift(kubernetes_verify_tls=False)
+    openshift = OpenShift()
 
     for index_url in index_urls:
         _LOGGER.debug("consider index %r", index_url)
@@ -161,7 +161,7 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
                     _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
                     _do_schedule_solver_jobs(openshift, index_urls, package_name, version, _SOLVER_OUTPUT)
             except Exception as e:
-                _LOGGER.warning(e)
+                _LOGGER.exception(str(exc))
 
 
 def _do_schedule_solver_jobs(
@@ -176,7 +176,7 @@ def _do_schedule_solver_jobs(
     )
 
     solvers_run = openshift.schedule_all_solvers(
-        packages=f"{package_name}=={package_version}", output=output, indexes=index_urls
+        packages=f"{package_name}==={package_version}", output=output, indexes=index_urls
     )
 
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
