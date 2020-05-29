@@ -19,7 +19,6 @@
 """This is thoth-initializer to start populating Thoth so that its knowledge can be spread."""
 
 from thoth.common import __version__ as __common__version__
-from thoth.common import init_logging
 from thoth.storages import __version__ as __storage__version__
 from thoth.python import __version__ as __python__version__
 
@@ -30,6 +29,3 @@ __service_version__ = f"{__version__}+\
     python.{__python__version__}.\
         storage.{__storage__version__}.\
             common.{__common__version__}"
-
-# Init logging here when gunicorn import this application.
-init_logging()
