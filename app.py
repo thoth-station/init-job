@@ -171,7 +171,9 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
 
                 for version in versions:
                     _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
-                    number_workflows = _do_schedule_solver_jobs(openshift, index_urls, package_name, version, _SOLVER_OUTPUT)
+                    number_workflows = _do_schedule_solver_jobs(
+                        openshift, index_urls, package_name, version, _SOLVER_OUTPUT
+                    )
 
                     counter += number_workflows
 
@@ -195,7 +197,7 @@ def _do_schedule_solver_jobs(
         _LOGGER.info(
             "Running solver job for package %r in version %r, results will be scheduled using Argo workflow",
             package_name,
-            package_version
+            package_version,
         )
 
     solvers_run = openshift.schedule_all_solvers(
@@ -304,7 +306,9 @@ def cli(
                 raise ValueError("No registered indexes found in the database")
 
             _LOGGER.info("Scheduling solver jobs for core packages...")
-            scheduled_solvers = _schedule_default_packages_solver_jobs(packages=_CORE_PACKAGES, index_urls=registered_indexes)
+            scheduled_solvers = _schedule_default_packages_solver_jobs(
+                packages=_CORE_PACKAGES, index_urls=registered_indexes
+            )
             _LOGGER.info(f"Total number of solver workflows scheduled for core packages: {scheduled_solvers}!")
             total_scheduled_solvers += scheduled_solvers
 
@@ -322,7 +326,9 @@ def cli(
                 raise ValueError("No registered indexes found in the database")
 
             _LOGGER.info("Scheduling solver jobs for data science packages...")
-            scheduled_solvers = _schedule_default_packages_solver_jobs(packages=data_science_packages, index_urls=registered_indexes)
+            scheduled_solvers = _schedule_default_packages_solver_jobs(
+                packages=data_science_packages, index_urls=registered_indexes
+            )
             _LOGGER.info(f"Total number of solver workflows scheduled for DS packages: {scheduled_solvers}!")
             total_scheduled_solvers += scheduled_solvers
 
@@ -330,6 +336,7 @@ def cli(
             _LOGGER.info("dry-run: not scheduling data science packages solver jobs!")
 
     _LOGGER.info(f"Total number of solver workflows scheduled: {total_scheduled_solvers}!")
+
 
 if __name__ == "__main__":
     cli()
