@@ -265,6 +265,7 @@ def cli(
 ):
     """Register AICoE indexes in Thoth's database."""
     graph = None
+    total_scheduled_solvers = 0
 
     if not dry_run:
         graph = GraphDatabase()
@@ -304,7 +305,8 @@ def cli(
 
             _LOGGER.info("Scheduling solver jobs for core packages...")
             scheduled_solvers = _schedule_default_packages_solver_jobs(packages=_CORE_PACKAGES, index_urls=registered_indexes)
-            _LOGGER.info(f"Total number of solver workflows scheduled: {scheduled_solvers}!")
+            _LOGGER.info(f"Total number of solver workflows scheduled for core packages: {scheduled_solvers}!")
+            total_scheduled_solvers += scheduled_solvers
 
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core packages solver jobs!")
@@ -321,11 +323,13 @@ def cli(
 
             _LOGGER.info("Scheduling solver jobs for data science packages...")
             scheduled_solvers = _schedule_default_packages_solver_jobs(packages=data_science_packages, index_urls=registered_indexes)
-            _LOGGER.info(f"Total number of solver workflows scheduled: {scheduled_solvers}!")
+            _LOGGER.info(f"Total number of solver workflows scheduled for DS packages: {scheduled_solvers}!")
+            total_scheduled_solvers += scheduled_solvers
 
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling data science packages solver jobs!")
 
+    _LOGGER.info(f"Total number of solver workflows scheduled: {total_scheduled_solvers}!")
 
 if __name__ == "__main__":
     cli()
