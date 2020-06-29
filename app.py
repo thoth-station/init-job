@@ -269,7 +269,7 @@ def cli(
         elif dry_run:
             _LOGGER.info("dry-run: not registering indexes...")
 
-        _ = _register_indexes(graph, index_base_url, dry_run)
+        _register_indexes(graph, index_base_url, dry_run)
 
     if solve_core_packages:
 
