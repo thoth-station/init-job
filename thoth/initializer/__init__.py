@@ -24,7 +24,7 @@ from thoth.python import __version__ as __python__version__
 
 
 __name__ = "thoth-initializer"
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 __service_version__ = f"{__version__}+\
     python.{__python__version__}.\
         storage.{__storage__version__}.\
