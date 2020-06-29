@@ -163,7 +163,7 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
                 for version in versions:
                     _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
                     _do_schedule_solver_jobs(openshift, index_urls, package_name, version, _SOLVER_OUTPUT)
-            except Exception as e:
+            except Exception as exc:
                 _LOGGER.exception(str(exc))
 
 
@@ -269,7 +269,7 @@ def cli(
         elif dry_run:
             _LOGGER.info("dry-run: not registering indexes...")
 
-        indexes = _register_indexes(graph, index_base_url, dry_run)
+        _ = _register_indexes(graph, index_base_url, dry_run)
 
     if solve_core_packages:
 
