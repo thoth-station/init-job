@@ -151,6 +151,7 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
     """Run solver jobs for Python packages list selected."""
     openshift = OpenShift()
 
+    counter = 0
     for index_url in index_urls:
         _LOGGER.debug("consider index %r", index_url)
         source = Source(index_url)
@@ -158,31 +159,54 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
         for package_name in packages:
             _LOGGER.debug("Obtaining %r versions", package_name)
 
+            versions = []
+
             try:
                 versions = source.get_package_versions(package_name)
-                for version in versions:
-                    _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
-                    _do_schedule_solver_jobs(openshift, index_urls, package_name, version, _SOLVER_OUTPUT)
+
             except Exception as exc:
                 _LOGGER.exception(str(exc))
+
+            if versions:
+
+                for version in versions:
+                    _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
+                    number_workflows = _do_schedule_solver_jobs(
+                        openshift, index_urls, package_name, version, _SOLVER_OUTPUT
+                    )
+
+                    counter += number_workflows
+
+            _LOGGER.info(f"Already scheduled {counter} solver workflows...")
+
+    return counter
 
 
 def _do_schedule_solver_jobs(
     openshift: OpenShift, index_urls: List[str], package_name: str, package_version: str, output: str
-) -> None:
+) -> int:
     """Run Python solvers for the given package in specified version."""
-    _LOGGER.info(
-        "Running solver jobs for package %r in version %r, results will be submitted to %r",
-        package_name,
-        package_version,
-        output,
-    )
+    if not openshift.use_argo:
+        _LOGGER.info(
+            "Running solver jobs for package %r in version %r, results will be submitted to %r",
+            package_name,
+            package_version,
+            output,
+        )
+    else:
+        _LOGGER.info(
+            "Running solver job for package %r in version %r, results will be scheduled using Argo workflow",
+            package_name,
+            package_version,
+        )
 
     solvers_run = openshift.schedule_all_solvers(
         packages=f"{package_name}==={package_version}", output=output, indexes=index_urls
     )
 
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
+
+    return len(solvers_run)
 
 
 @click.command()
@@ -226,7 +250,7 @@ def _do_schedule_solver_jobs(
     help="Schedule solver jobs for core packages.",
 )
 @click.option(
-    "--solve-data_science-packages",
+    "--solve-data-science-packages",
     required=False,
     is_flag=True,
     envvar="THOTH_INIT_JOB_REGISTER_DATA_SCIENCE_PACKAGES",
@@ -243,6 +267,7 @@ def cli(
 ):
     """Register AICoE indexes in Thoth's database."""
     graph = None
+    total_scheduled_solvers = 0
 
     if not dry_run:
         graph = GraphDatabase()
@@ -281,7 +306,11 @@ def cli(
                 raise ValueError("No registered indexes found in the database")
 
             _LOGGER.info("Scheduling solver jobs for core packages...")
-            _schedule_default_packages_solver_jobs(packages=_CORE_PACKAGES, index_urls=registered_indexes)
+            scheduled_solvers = _schedule_default_packages_solver_jobs(
+                packages=_CORE_PACKAGES, index_urls=registered_indexes
+            )
+            _LOGGER.info(f"Total number of solver workflows scheduled for core packages: {scheduled_solvers}!")
+            total_scheduled_solvers += scheduled_solvers
 
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core packages solver jobs!")
@@ -297,10 +326,16 @@ def cli(
                 raise ValueError("No registered indexes found in the database")
 
             _LOGGER.info("Scheduling solver jobs for data science packages...")
-            _schedule_default_packages_solver_jobs(packages=data_science_packages, index_urls=registered_indexes)
+            scheduled_solvers = _schedule_default_packages_solver_jobs(
+                packages=data_science_packages, index_urls=registered_indexes
+            )
+            _LOGGER.info(f"Total number of solver workflows scheduled for DS packages: {scheduled_solvers}!")
+            total_scheduled_solvers += scheduled_solvers
 
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling data science packages solver jobs!")
+
+    _LOGGER.info(f"Total number of solver workflows scheduled: {total_scheduled_solvers}!")
 
 
 if __name__ == "__main__":
