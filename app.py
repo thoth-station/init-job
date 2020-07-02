@@ -23,7 +23,6 @@ import os
 from typing import List
 from typing import Generator
 from urllib.parse import urljoin
-from pathlib import Path
 
 import requests
 import click
@@ -133,10 +132,10 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
 
 def _take_data_science_packages() -> List[str]:
     """Take list of Python Packages for data science."""
-    current_path = Path.cwd()
-    complete_file_path = current_path.joinpath("hundredsDatasciencePackages.yaml")
-
-    with open(complete_file_path) as yaml_file:
+    data_science_packages_file = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "hundredsDatasciencePackages.yaml"
+    )
+    with open(data_science_packages_file) as yaml_file:
         requested_packages = yaml.safe_load(yaml_file)
 
     data_science_packages = []
