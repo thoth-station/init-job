@@ -147,7 +147,7 @@ def _take_data_science_packages() -> List[str]:
     return data_science_packages
 
 
-def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List[str]) -> None:
+def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List[str]) -> int:
     """Run solver jobs for Python packages list selected."""
     openshift = OpenShift()
 
