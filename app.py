@@ -19,7 +19,6 @@
 
 import logging
 import yaml
-import os
 from typing import List
 from typing import Generator
 from urllib.parse import urljoin
@@ -38,7 +37,6 @@ init_logging()
 
 _LOGGER = logging.getLogger("thoth.init_job")
 _DEFAULT_INDEX_BASE_URL = "https://tensorflow.pypi.thoth-station.ninja/index"
-_SOLVER_OUTPUT = os.getenv("THOTH_SOLVER_OUTPUT", "http://result-api/api/v1/solver-result")
 _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 _PYPI_WAREHOUSE_JSON_API_URL = "https://pypi.org/pypi"
 _CORE_PACKAGES = ["setuptools", "six", "pip"]
@@ -170,9 +168,7 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
 
                 for version in versions:
                     _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
-                    number_workflows = _do_schedule_solver_jobs(
-                        openshift, index_urls, package_name, version, _SOLVER_OUTPUT
-                    )
+                    number_workflows = _do_schedule_solver_jobs(openshift, index_urls, package_name, version)
 
                     counter += number_workflows
 
@@ -182,15 +178,12 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
 
 
 def _do_schedule_solver_jobs(
-    openshift: OpenShift, index_urls: List[str], package_name: str, package_version: str, output: str
+    openshift: OpenShift, index_urls: List[str], package_name: str, package_version: str
 ) -> int:
     """Run Python solvers for the given package in specified version."""
     if not openshift.use_argo:
         _LOGGER.info(
-            "Running solver jobs for package %r in version %r, results will be submitted to %r",
-            package_name,
-            package_version,
-            output,
+            "Running solver jobs for package %r in version %r", package_name, package_version,
         )
     else:
         _LOGGER.info(
@@ -199,9 +192,7 @@ def _do_schedule_solver_jobs(
             package_version,
         )
 
-    solvers_run = openshift.schedule_all_solvers(
-        packages=f"{package_name}==={package_version}", output=output, indexes=index_urls
-    )
+    solvers_run = openshift.schedule_all_solvers(packages=f"{package_name}==={package_version}", indexes=index_urls)
 
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
 
