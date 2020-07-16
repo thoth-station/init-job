@@ -15,16 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+
 """Initialize a fresh Thoth deployment."""
 
+
+import os
 import logging
 import yaml
+
 from typing import List
 from typing import Generator
 from urllib.parse import urljoin
 
 import requests
 import click
+
 from bs4 import BeautifulSoup
 
 from thoth.common import init_logging
@@ -32,6 +37,7 @@ from thoth.common import OpenShift
 from thoth.python import Source
 from thoth.storages import GraphDatabase
 from thoth.initializer import __service_version__
+
 
 init_logging()
 
