@@ -17,6 +17,7 @@
 
 """Initialize a fresh Thoth deployment."""
 
+import os
 import logging
 import yaml
 from typing import List
