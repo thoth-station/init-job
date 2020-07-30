@@ -40,6 +40,7 @@ hundreds_datascience_packages:
   - h5py
   - horovod
   - hpbandster
+  - intel-tensorflow
   - interpret
   - jellyfish
   - jax
