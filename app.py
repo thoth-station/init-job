@@ -182,17 +182,11 @@ def _do_schedule_solver_jobs(
     openshift: OpenShift, index_urls: List[str], package_name: str, package_version: str
 ) -> int:
     """Run Python solvers for the given package in specified version."""
-    if not openshift.use_argo:
-        _LOGGER.info(
-            "Running solver jobs for package %r in version %r", package_name, package_version,
-        )
-    else:
-        _LOGGER.info(
-            "Running solver job for package %r in version %r, results will be scheduled using Argo workflow",
-            package_name,
-            package_version,
-        )
-
+    _LOGGER.info(
+        "Running solver job for package %r in version %r, results will be scheduled using Argo workflow",
+        package_name,
+        package_version,
+    )
     solvers_run = openshift.schedule_all_solvers(packages=f"{package_name}==={package_version}", indexes=index_urls)
 
     _LOGGER.debug("Response when running solver jobs: %r", solvers_run)
