@@ -21,6 +21,7 @@ import os
 import logging
 import yaml
 from typing import List
+from typing import Optional
 from typing import Generator
 from urllib.parse import urljoin
 
@@ -129,7 +130,7 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
     return index_urls
 
 
-def _take_data_science_packages() -> List[str]:
+def _take_data_science_packages(offset: Optional[int] = None, count: Optional[int] = None) -> List[str]:
     """Take list of Python Packages for data science."""
     data_science_packages_file = os.path.join(
         os.path.dirname(os.path.realpath(__file__)), "hundredsDatasciencePackages.yaml"
@@ -141,6 +142,12 @@ def _take_data_science_packages() -> List[str]:
     for package_name in requested_packages["hundreds_datascience_packages"]:
         _LOGGER.info("Registering package %r", package_name)
         data_science_packages.append(package_name)
+
+    if offset:
+        data_science_packages = data_science_packages[offset:]
+
+    if count:
+        data_science_packages = data_science_packages[:count]
 
     return data_science_packages
 
@@ -241,6 +248,20 @@ def _do_schedule_solver_jobs(
     envvar="THOTH_INIT_JOB_REGISTER_DATA_SCIENCE_PACKAGES",
     help="Schedule solver jobs for data science packages.",
 )
+@click.option(
+    "--science-packages-offset",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_DATA_SCIENCE_PACKAGES_OFFSET",
+    help="An offset to slice data science packages.",
+)
+@click.option(
+    "--science-packages-count",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_DATA_SCIENCE_PACKAGES_COUNT",
+    help="Number of data science packages to schedule.",
+)
 def cli(
     verbose: bool = False,
     dry_run: bool = False,
@@ -249,6 +270,8 @@ def cli(
     register_indexes: bool = False,
     solve_core_packages: bool = False,
     solve_data_science_packages: bool = False,
+    data_science_packages_offset: Optional[int] = None,
+    data_science_packages_count: Optional[int] = None,
 ):
     """Register AICoE indexes in Thoth's database."""
     graph = None
@@ -301,7 +324,7 @@ def cli(
             _LOGGER.info("dry-run: not scheduling core packages solver jobs!")
 
     if solve_data_science_packages:
-        data_science_packages = _take_data_science_packages()
+        data_science_packages = _take_data_science_packages(data_science_packages_offset, data_science_packages_count)
 
         if not dry_run:
             _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
@@ -316,9 +339,17 @@ def cli(
             )
             _LOGGER.info(f"Total number of solver workflows scheduled for DS packages: {scheduled_solvers}!")
             total_scheduled_solvers += scheduled_solvers
-
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling data science packages solver jobs!")
+    else:
+        if data_science_packages_offset is not None:
+            _LOGGER.warning(
+                "Provided --data-science-packages-offset but solving data science packages will not be scheduled"
+            )
+        if data_science_packages_count is not None:
+            _LOGGER.warning(
+                "Provided --data-science-packages-offset but solving data science packages will not be scheduled"
+            )
 
     _LOGGER.info(f"Total number of solver workflows scheduled: {total_scheduled_solvers}!")
 
