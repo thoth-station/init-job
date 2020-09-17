@@ -37,3 +37,9 @@
 * :pushpin: Automatic update of dependency thoth-common from 0.13.13 to 0.14.0 (#369)
 * Add more info about init-job and correct some errors in code and cli commands (#358)
 * Add missing GitHub issue templates
+
+## Release 0.7.1 (2020-09-17T15:50:32)
+### Features
+* :bulb: remove the use-argo function (#393)
+### Improvements
+* Schedule only one index (#395)
