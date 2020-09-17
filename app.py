@@ -169,7 +169,7 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
 
                 for version in versions:
                     _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
-                    number_workflows = _do_schedule_solver_jobs(openshift, index_urls, package_name, version)
+                    number_workflows = _do_schedule_solver_jobs(openshift, [index_url], package_name, version)
 
                     counter += number_workflows
 
