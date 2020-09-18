@@ -30,9 +30,18 @@ from bs4 import BeautifulSoup
 
 from thoth.common import init_logging
 from thoth.common import OpenShift
+from thoth.common import __version__ as __common__version__
 from thoth.python import Source
+from thoth.python import __version__ as __python__version__
 from thoth.storages import GraphDatabase
-from thoth.initializer import __service_version__
+from thoth.storages import __version__ as __storage__version__
+
+
+__version__ = "0.7.1"
+__component_version__ = f"{__version__}+\
+    python.{__python__version__}.\
+        storage.{__storage__version__}.\
+            common.{__common__version__}"
 
 init_logging()
 
@@ -42,7 +51,7 @@ _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 _PYPI_WAREHOUSE_JSON_API_URL = "https://pypi.org/pypi"
 _CORE_PACKAGES = ["setuptools", "six", "pip"]
 
-_LOGGER.info(f"Thoth Initializer v%s", __service_version__)
+_LOGGER.info(f"Thoth Initializer v%s", __component_version__)
 
 
 def _html_parse_listing(url: str) -> Generator[str, None, None]:
