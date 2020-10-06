@@ -37,6 +37,7 @@ hundreds_datascience_packages:
   - gensim
   - graphviz
   - gspread-pandas
+  - gym
   - h5py
   - horovod
   - hpbandster
