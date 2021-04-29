@@ -272,13 +272,15 @@ def cli(
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
 
-    if not index_base_url.endswith("/"):
-        index_base_url += "/"
+    if index_base_url:
+        if not index_base_url.endswith("/"):
+            index_base_url += "/"
 
     if initialize_schema:
         if not dry_run:
             _LOGGER.info("Initializing schema")
-            graph.initialize_schema()
+            if graph:
+                graph.initialize_schema()
         elif dry_run:
             _LOGGER.info("dry-run: not initializing schema...")
 
@@ -288,13 +290,15 @@ def cli(
         elif dry_run:
             _LOGGER.info("dry-run: not registering indexes...")
 
-        _register_indexes(graph, index_base_url, dry_run)
+        if graph and index_base_url:
+            _register_indexes(graph, index_base_url, dry_run)
 
     if solve_core_packages:
 
         if not dry_run:
             _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
-            registered_indexes = graph.get_python_package_index_urls_all()
+            if graph:
+                registered_indexes = graph.get_python_package_index_urls_all()
 
             if not registered_indexes:
                 raise ValueError("No registered indexes found in the database")
@@ -314,7 +318,8 @@ def cli(
 
         if not dry_run:
             _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
-            registered_indexes = graph.get_python_package_index_urls_all()
+            if graph:
+                registered_indexes = graph.get_python_package_index_urls_all()
 
             if not registered_indexes:
                 raise ValueError("No registered indexes found in the database")
