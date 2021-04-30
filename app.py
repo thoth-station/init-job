@@ -253,14 +253,13 @@ def _do_schedule_solver_jobs(
 def cli(
     verbose: bool = False,
     dry_run: bool = False,
-    index_base_url: str = None,
+    index_base_url: str = _DEFAULT_INDEX_BASE_URL,
     initialize_schema: bool = False,
     register_indexes: bool = False,
     solve_core_packages: bool = False,
     solve_data_science_packages: bool = False,
 ):
     """Register AICoE indexes in Thoth's database."""
-    graph = None
     total_scheduled_solvers = 0
 
     if not dry_run:
@@ -272,15 +271,13 @@ def cli(
     if verbose:
         _LOGGER.setLevel(logging.DEBUG)
 
-    if index_base_url:
-        if not index_base_url.endswith("/"):
-            index_base_url += "/"
+    if not index_base_url.endswith("/"):
+        index_base_url += "/"
 
     if initialize_schema:
         if not dry_run:
             _LOGGER.info("Initializing schema")
-            if graph:
-                graph.initialize_schema()
+            graph.initialize_schema()
         elif dry_run:
             _LOGGER.info("dry-run: not initializing schema...")
 
@@ -290,15 +287,13 @@ def cli(
         elif dry_run:
             _LOGGER.info("dry-run: not registering indexes...")
 
-        if graph and index_base_url:
-            _register_indexes(graph, index_base_url, dry_run)
+        _register_indexes(graph, index_base_url, dry_run)
 
     if solve_core_packages:
 
         if not dry_run:
             _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
-            if graph:
-                registered_indexes = graph.get_python_package_index_urls_all()
+            registered_indexes = graph.get_python_package_index_urls_all()
 
             if not registered_indexes:
                 raise ValueError("No registered indexes found in the database")
@@ -318,8 +313,7 @@ def cli(
 
         if not dry_run:
             _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
-            if graph:
-                registered_indexes = graph.get_python_package_index_urls_all()
+            registered_indexes = graph.get_python_package_index_urls_all()
 
             if not registered_indexes:
                 raise ValueError("No registered indexes found in the database")
