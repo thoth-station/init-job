@@ -25,6 +25,7 @@ presubmits:
         - image: quay.io/thoth-station/thoth-pytest-ubi8-py38:v0.12.5
           command:
             - "/usr/local/bin/mypy"
+            - "."
             - "--ignore-missing-imports"
           resources:
             requests:
