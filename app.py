@@ -253,14 +253,13 @@ def _do_schedule_solver_jobs(
 def cli(
     verbose: bool = False,
     dry_run: bool = False,
-    index_base_url: str = None,
+    index_base_url: str = _DEFAULT_INDEX_BASE_URL,
     initialize_schema: bool = False,
     register_indexes: bool = False,
     solve_core_packages: bool = False,
     solve_data_science_packages: bool = False,
 ):
     """Register AICoE indexes in Thoth's database."""
-    graph = None
     total_scheduled_solvers = 0
 
     if not dry_run:
