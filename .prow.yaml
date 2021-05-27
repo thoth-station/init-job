@@ -11,10 +11,6 @@ presubmits:
             - "pre-commit"
             - "run"
             - "--all-files"
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "2"
   - name: thoth-mypy-py38
     decorate: true
     skip_report: false
@@ -27,7 +23,3 @@ presubmits:
             - "/usr/local/bin/mypy"
             - "."
             - "--ignore-missing-imports"
-          resources:
-            requests:
-              memory: "2Gi"
-              cpu: "200m"
