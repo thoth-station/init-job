@@ -20,6 +20,7 @@
 import os
 import logging
 import yaml
+import json
 from typing import List
 from typing import Generator
 from urllib.parse import urljoin
@@ -38,10 +39,10 @@ from thoth.storages import __version__ as __storage__version__
 
 
 __version__ = "0.7.1"
-__component_version__ = f"{__version__}+\
-    python.{__python__version__}.\
-        storage.{__storage__version__}.\
-            common.{__common__version__}"
+__component_version__ = f"{__version__}+"\
+    f"python.{__python__version__}."\
+    f"storage.{__storage__version__}."\
+    f"common.{__common__version__}"
 
 init_logging()
 
@@ -237,6 +238,13 @@ def _do_schedule_solver_jobs(
     help="Register indexes in Thoth Knowledge Graph.",
 )
 @click.option(
+    "--configure-solver-rules",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_CONFIGURE_SOLVER_RULES",
+    help="Configure solver rules in the deployment.",
+)
+@click.option(
     "--solve-core-packages",
     required=False,
     is_flag=True,
@@ -257,6 +265,7 @@ def cli(
     initialize_schema: bool = False,
     register_indexes: bool = False,
     solve_core_packages: bool = False,
+    configure_solver_rules: bool = False,
     solve_data_science_packages: bool = False,
 ):
     """Register AICoE indexes in Thoth's database."""
@@ -281,6 +290,18 @@ def cli(
         elif dry_run:
             _LOGGER.info("dry-run: not initializing schema...")
 
+    if configure_solver_rules:
+        if not dry_run:
+            _LOGGER.info("Configuring solver rules")
+
+            with open("solver_rules.json") as f:
+                solver_rules = json.load(f)
+
+            for rule in solver_rules:
+                graph.create_python_rule(**rule)
+        else:
+            _LOGGER.info("dry-run: configuring solver rules")
+
     if register_indexes:
         if not dry_run:
             _LOGGER.info("Registering indexes...")
@@ -290,7 +311,6 @@ def cli(
         _register_indexes(graph, index_base_url, dry_run)
 
     if solve_core_packages:
-
         if not dry_run:
             _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
             registered_indexes = graph.get_python_package_index_urls_all()
@@ -304,7 +324,6 @@ def cli(
             )
             _LOGGER.info(f"Total number of solver workflows scheduled for core packages: {scheduled_solvers}!")
             total_scheduled_solvers += scheduled_solvers
-
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core packages solver jobs!")
 
