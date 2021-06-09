@@ -39,10 +39,12 @@ from thoth.storages import __version__ as __storage__version__
 
 
 __version__ = "0.7.1"
-__component_version__ = f"{__version__}+"\
-    f"python.{__python__version__}."\
-    f"storage.{__storage__version__}."\
+__component_version__ = (
+    f"{__version__}+"
+    f"python.{__python__version__}."
+    f"storage.{__storage__version__}."
     f"common.{__common__version__}"
+)
 
 init_logging()
 
@@ -298,7 +300,11 @@ def cli(
                 solver_rules = json.load(f)
 
             for rule in solver_rules:
-                graph.create_python_rule(**rule)
+                try:
+                    graph.create_python_rule(**rule)
+                except Exception:
+                    _LOGGER.error("Failed to register Python rule %r", rule)
+                    raise
         else:
             _LOGGER.info("dry-run: configuring solver rules")
 
