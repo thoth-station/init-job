@@ -43,3 +43,26 @@
 * :bulb: remove the use-argo function (#393)
 ### Improvements
 * Schedule only one index (#395)
+
+## Release 0.8.0 (2021-06-10T13:34:59)
+### Features
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Add solver rules configured
+* Implement configuring solver rules
+* Add PR template
+* Add standard Thoth GitHub templates
+* :hatched_chick: update the prow resource limits (#414)
+* :arrow_up: Automatic update of dependencies by Kebechet (#413)
+* :arrow_up: Automatic update of dependencies by kebechet. (#411)
+* :arrow_up: Automatic update of dependencies by kebechet. (#410)
+* port to python 38 (#409)
+* Add gym to data science packages (#404)
+### Improvements
+* make mypy happy (#412)
+* Do not use thoth.initializer and rename __service_version__
+### Automatic Updates
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.10 to 0.25.15 (#407)
+* :pushpin: Automatic update of dependency thoth-common from 0.19.0 to 0.20.0 (#406)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.1 to 0.10.2 (#405)
+* :pushpin: Automatic update of dependency thoth-python from 0.10.0 to 0.10.1 (#397)
+* :pushpin: Automatic update of dependency thoth-storages from 0.25.0 to 0.25.10 (#399)
