@@ -141,16 +141,14 @@ def _register_indexes(graph: GraphDatabase, index_base_url: str, dry_run: bool =
     return index_urls
 
 
-def _take_data_science_packages() -> List[str]:
+def _take_data_science_packages(pkg_list: str) -> List[str]:
     """Take list of Python Packages for data science."""
-    data_science_packages_file = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), "hundredsDatasciencePackages.yaml"
-    )
+    data_science_packages_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), f"{pkg_list}.yaml")
     with open(data_science_packages_file) as yaml_file:
         requested_packages = yaml.safe_load(yaml_file)
 
     data_science_packages = []
-    for package_name in requested_packages["hundreds_datascience_packages"]:
+    for package_name in requested_packages[pkg_list]:
         _LOGGER.info("Registering package %r", package_name)
         data_science_packages.append(package_name)
 
@@ -254,11 +252,25 @@ def _do_schedule_solver_jobs(
     help="Schedule solver jobs for core packages.",
 )
 @click.option(
-    "--solve-data-science-packages",
+    "--solve-hundred-data-science-packages",
     required=False,
     is_flag=True,
-    envvar="THOTH_INIT_JOB_REGISTER_DATA_SCIENCE_PACKAGES",
+    envvar="THOTH_INIT_JOB_REGISTER_HUNDRED_DATA_SCIENCE_PACKAGES",
     help="Schedule solver jobs for data science packages.",
+)
+@click.option(
+    "--solve-rhods-packages",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_REGISTER_RHODS_PACKAGES",
+    help="Schedule solver jobs for rhods packages.",
+)
+@click.option(
+    "--solve-ray-packages",
+    required=False,
+    is_flag=True,
+    envvar="THOTH_INIT_JOB_REGISTER_RAY_PACKAGES",
+    help="Schedule solver jobs for ray packages.",
 )
 def cli(
     verbose: bool = False,
@@ -268,7 +280,9 @@ def cli(
     register_indexes: bool = False,
     solve_core_packages: bool = False,
     configure_solver_rules: bool = False,
-    solve_data_science_packages: bool = False,
+    solve_hundred_data_science_packages: bool = False,
+    solve_rhods_packages: bool = False,
+    solve_ray_packages: bool = False,
 ):
     """Register AICoE indexes in Thoth's database."""
     total_scheduled_solvers = 0
@@ -333,9 +347,14 @@ def cli(
         elif dry_run:
             _LOGGER.info("dry-run: not scheduling core packages solver jobs!")
 
-    if solve_data_science_packages:
-        data_science_packages = _take_data_science_packages()
-
+    data_science_packages = []
+    if solve_hundred_data_science_packages:
+        data_science_packages.extend(_take_data_science_packages("hundreds_datascience_packages"))
+    if solve_rhods_packages:
+        data_science_packages.extend(_take_data_science_packages("rhods_nb_packages"))
+    if solve_ray_packages:
+        data_science_packages.extend(_take_data_science_packages("ray_packages"))
+    if data_science_packages:
         if not dry_run:
             _LOGGER.info("Retrieving registered indexes from Thoth Knowledge Graph...")
             registered_indexes = graph.get_python_package_index_urls_all()
