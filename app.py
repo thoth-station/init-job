@@ -38,7 +38,7 @@ from thoth.storages import GraphDatabase
 from thoth.storages import __version__ as __storage__version__
 
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 __component_version__ = (
     f"{__version__}+"
     f"python.{__python__version__}."

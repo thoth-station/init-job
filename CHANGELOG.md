@@ -1,4 +1,10 @@
 
+## Release 0.8.1 (2021-11-08T12:15:13)
+* :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
+* :arrow_up: Automatic update of dependencies by Kebechet
+* Drop version specifiers to avoid keeping invalid package versions
+* TensorFlow<2 releases are no longer supported
+
 ## Release 0.6.1 (2020-06-29T22:50:27)
 * Adding version manager.
 * Update OWNERS
