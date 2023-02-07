@@ -54,7 +54,7 @@ _PYPI_SIMPLE_API_URL = "https://pypi.org/simple"
 _PYPI_WAREHOUSE_JSON_API_URL = "https://pypi.org/pypi"
 _CORE_PACKAGES = ["setuptools", "six", "pip"]
 
-_LOGGER.info(f"Thoth Initializer v%s", __component_version__)
+_LOGGER.info("Thoth Initializer v" + __component_version__)
 
 
 def _html_parse_listing(url: str) -> Generator[str, None, None]:
@@ -178,7 +178,6 @@ def _schedule_default_packages_solver_jobs(packages: List[str], index_urls: List
                 _LOGGER.exception(str(exc))
 
             if versions:
-
                 for version in versions:
                     _LOGGER.info("Scheduling package_name %r in package_version %r", package_name, version)
                     number_workflows = _do_schedule_solver_jobs(openshift, [index_url], package_name, version)
