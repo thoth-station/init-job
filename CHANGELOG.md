@@ -1,4 +1,16 @@
 
+## Release 0.9.0 (2023-02-07T08:44:53)
+* 77c2507 :arrow_up: Bump certifi from 2021.10.8 to 2022.12.7
+* c91448f remove f-string from version logging
+* 3abec71 :arrow_up: update pre-commit config
+* 4b38ba0 Upgrade pre-commit image version (#444)
+* 66ed1e3 :arrow_up: ci config updates
+* 2649535 Remove unused .thothTemplate.yaml (#441)
+* 2d1a3f9 Update OWNERS
+* d6b6480 Enable TLS verification
+* 23e829a Update pyproject.toml to use Python 3.8
+* b2ea4e1 replace update with advise manager
+
 ## Release 0.8.1 (2021-11-08T12:15:13)
 * :arrow_up: Automatic update of dependencies by Kebechet for the ubi8 environment
 * :arrow_up: Automatic update of dependencies by Kebechet
